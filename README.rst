@@ -28,10 +28,11 @@ scikit-surgerytf is part of the `SNAPPY`_ software project, developed at the `We
 scikit-surgerytf supports Python 3.6+.
 
 The aim of scikit-surgerytf is to provide a home for various Tensor Flow examples and
-utilities and to show best practice. Its NOT mean't to be a layer on-top of Tensor Flow
-or provide a new kind-of platform. Its so that researchers can learn from examples,
+utilities and to show best practice. Its NOT meant to be a layer on-top of Tensor Flow
+or provide a new kind-of platform. The aim is that researchers can learn from examples,
 and importantly, learn how to deliver an algorithm that can be used by other people
-out of the box, with just a ```pip install```.
+out of the box, with just a ```pip install```, rather than a new user having to re-implement
+stuff.
 
 Developing
 ----------

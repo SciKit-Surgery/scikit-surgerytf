@@ -25,16 +25,13 @@ Author: Matt Clarkson
 
 scikit-surgerytf is part of the `SNAPPY`_ software project, developed at the `Wellcome EPSRC Centre for Interventional and Surgical Sciences`_, part of `University College London (UCL)`_.
 
-scikit-surgerytf supports Python 2.7 and Python 3.6.
+scikit-surgerytf supports Python 3.6+.
 
-scikit-surgerytf is currently a demo project, which will add/multiply two numbers. Example usage:
-
-::
-
-    python sksurgerytf.py 5 8
-    python sksurgerytf.py 3 6 --multiply
-
-Please explore the project structure, and implement your own functionality.
+The aim of scikit-surgerytf is to provide a home for various Tensor Flow examples and
+utilities and to show best practice. Its NOT mean't to be a layer on-top of Tensor Flow
+or provide a new kind-of platform. Its so that researchers can learn from examples,
+and importantly, learn how to deliver an algorithm that can be used by other people
+out of the box, with just a ```pip install```.
 
 Developing
 ----------
@@ -81,13 +78,13 @@ You can pip install directly from the repository as follows:
 
 
 Contributing
-^^^^^^^^^^^^
+----------
 
 Please see the `contributing guidelines`_.
 
 
 Useful links
-^^^^^^^^^^^^
+----------
 
 * `Source code repository`_
 * `Documentation`_

@@ -20,7 +20,6 @@ scikit-surgerytf
     :alt: Documentation Status
 
 
-
 Author: Matt Clarkson
 
 scikit-surgerytf is part of the `SNAPPY`_ software project, developed at the `Wellcome EPSRC Centre for Interventional and Surgical Sciences`_, part of `University College London (UCL)`_.
@@ -33,6 +32,23 @@ or provide a new kind-of platform. The aim is that researchers can learn from ex
 and importantly, learn how to deliver an algorithm that can be used by other people
 out of the box, with just a ```pip install```, rather than a new user having to
 re-implement stuff, or struggle to get someone else's code running.
+
+Features
+----------
+
+Each project herein should provide the following:
+
+* Code that passes pylint.
+* Unit testing, as appropriate.
+* Sufficient logging, including date, time, software (git) version, runtime folder, machine name.
+* A main class containing a network that can be run separately in train/test mode.
+* Saving of learned network weights.
+* Loading of pre-train weights and either continue training, or testing some input.
+* Visualisation with TensorBoard.
+* The ability to be run repeatedly for hyper-parameter tuning via python scripting, not bash.
+* The ability to be callable from within a Jupyter Notebook, and thereby amenable to weekly writup's for supervisions.
+* One or more command line programs that are pip-installable, providing a subsequent user to train and test your algorithm.
+
 
 Developing
 ----------

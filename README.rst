@@ -27,11 +27,13 @@ scikit-surgerytf is part of the `SNAPPY`_ software project, developed at the `We
 scikit-surgerytf supports Python 3.6+, and tensorflow >= 2.0.0.
 
 The aim of scikit-surgerytf is to provide a home for various Tensor Flow examples and
-utilities and to show best practice. Its NOT meant to be a layer on-top of Tensor Flow
+utilities and to show best practice. It's NOT meant to be a layer on-top of Tensor Flow
 or provide a new kind-of platform. The aim is that researchers can learn from examples,
 and importantly, learn how to deliver an algorithm that can be used by other people
 out of the box, with just a ```pip install```, rather than a new user having to
-re-implement stuff, or struggle to get someone else's code running.
+re-implement stuff, or struggle to get someone else's code running. Researchers
+can commit their research to this repository, or use the `PythonTemplate`_ to
+generate their own project, and put it therein.
 
 Features
 ----------
@@ -129,4 +131,4 @@ Supported by `Wellcome`_ and `EPSRC`_.
 .. _`EPSRC`: https://www.epsrc.ac.uk/
 .. _`contributing guidelines`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/blob/master/CONTRIBUTING.rst
 .. _`license file`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/blob/master/LICENSE
-
+.. _`PythonTemplate`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/PythonTemplate

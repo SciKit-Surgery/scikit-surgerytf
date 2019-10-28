@@ -98,6 +98,12 @@ class FashionMNIST:
             keras.layers.Dense(10, activation='softmax')
         ])
 
+        self.model.compile(optimizer='adam',
+                           loss='sparse_categorical_crossentropy',
+                           metrics=['accuracy'])
+
+        self.model.summary()
+
     def train(self):
         """
         Method to train the neural network.
@@ -110,10 +116,6 @@ class FashionMNIST:
 
         Default parameters for demo purposes, 10 epochs.
         """
-        self.model.compile(optimizer='adam',
-                           loss='sparse_categorical_crossentropy',
-                           metrics=['accuracy'])
-
         self.model.fit(self.train_images, self.train_labels, epochs=10)
 
         self.model.evaluate(self.test_images,

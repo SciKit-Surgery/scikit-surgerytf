@@ -5,7 +5,6 @@ variables:
 
 stages:
   - build
-  - installer
   - test
   - deploy
 
@@ -26,26 +25,6 @@ stages:
     paths:
       - dist/
     expire_in: 1 week
-
-# The win/mac/linux build stages inherit settings
-# from build-install-template
-build linux installer:
-  <<: *build-skip-template
-  <<: *build-install-template
-  tags:
-    - shared-linux
-
-build mac installer:
-  <<: *build-skip-template
-  <<: *build-install-template
-  tags:
-    - shared-mac
-
-build windows installer:
-  <<: *build-skip-template
-  <<: *build-install-template
-  tags:
-    - shared-win
 
 build docs:
   <<: *build-skip-template
@@ -90,31 +69,6 @@ test Windows:
       - $CI_COMMIT_MESSAGE =~ /\[skip[ _-]build?\]/i
   dependencies:
     - build docs
-
-deploy docs to staging:
-  <<: *deploy-docs-skip-template
-  script:
-    # Note: the group/username directory must already exist on the server before calling this command
-    - rsync -avz -e'ssh -v' --numeric-ids --delete doc/build/html/* staging_docs_rsync:WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf 2>&1
-  tags:
-    - docs-staging
-  environment:
-    name: staging
-    url: http://weisslab-lin.cs.ucl.ac.uk/staging/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
-  only:
-    - master
-
-deploy docs to production:
-  <<: *deploy-docs-skip-template
-  script:
-    # Note: the group/username directory must already exist on the server before calling this command
-    - rsync -avz -e'ssh -v' --numeric-ids --delete doc/build/html/* production_docs_rsync:WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf 2>&1
-  tags:
-    - docs-production
-  environment:
-    name: production
-  only:
-    - public
 
 deploy pip to PyPI:
   stage: deploy

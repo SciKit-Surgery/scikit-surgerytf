@@ -32,4 +32,4 @@ def test_load_weights_then_test():
 def test_run_fashion_model():
     f.run_fashion_model('tests/data/fashion/test_train_then_test',
                         'tests/data/fashion/test_train_then_test.png',
-                        'tests/data/fashion/test_run_fashion_model')
+                        'tests/output/fashion/save/test_run_fashion_model')

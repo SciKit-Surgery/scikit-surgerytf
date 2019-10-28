@@ -1,2 +1,2 @@
-model_checkpoint_path: "test_run_fashion_model"
-all_model_checkpoint_paths: "test_run_fashion_model"
+model_checkpoint_path: "test_train_then_test"
+all_model_checkpoint_paths: "test_train_then_test"

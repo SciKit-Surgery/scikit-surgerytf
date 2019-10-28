@@ -8,10 +8,13 @@ Inspired by
 <https://www.tensorflow.org/tutorials/keras/classification>`_.
 
 """
+import logging
+import copy
 import numpy as np
-import tensorflow as tf
 from tensorflow import keras
 import cv2
+
+LOGGER = logging.getLogger(__name__)
 
 
 class FashionMNIST:
@@ -47,6 +50,13 @@ class FashionMNIST:
         else:
             self.load_data()
             self.train()
+
+    def get_class_names(self):
+        """
+        Returns a copy of the valid class names.
+        :return: list of strings
+        """
+        return copy.deepcopy(self.class_names)
 
     def load_data(self):
         """
@@ -115,22 +125,19 @@ class FashionMNIST:
         Method to test a single (28 x 28) image.
 
         :param image: (28 x 28), numpy, single channel, [0-255], uchar.
-        :return: (category, category name)
+        :return: (class_index, class_name)
         """
         normalised = self.__preprocess_data(image)
         img = (np.expand_dims(normalised, 0))
         predictions = self.model.predict(img)
-        index = np.argmax(predictions[0])
-        return index, self.class_names[index]
+        class_index = np.argmax(predictions[0])
+        return class_index, self.class_names[class_index]
 
-    def save(self, filename):
+    def save_weights(self, filename):
         """
-        Method to save the network to disk.
+        Method to save the network weights to disk.
         :param filename: file to save to
         """
-        if self.model is None:
-            raise ValueError("Model has not been created.")
-
         self.model.save_weights(filename)
 
     def get_test_image(self, index):
@@ -145,24 +152,32 @@ class FashionMNIST:
             self.load_data()
         img = self.test_images[index, :, :]
         reshaped = img.reshape([28, 28])
-        return reshaped
+        rescaled = reshaped * 255
+        output = rescaled.astype(np.uint8)
+        return output
 
 
 def run_fashion_model(load, image, save):
     """
-    Function to run the Fashion MNIST model.
+    Helper function to run the Fashion MNIST model from
+    the command line entry point.
 
     :param load: file of previously trained weights
     :param image: image to test
     :param save: file to save weights to
     """
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+
     fmn = FashionMNIST(load)
+
+    if save is not None:
+        fmn.save_weights(save)
 
     if image is not None:
         img = cv2.imread(image)
-        index, name = fmn.test(img)
-        tf.logging.info("Image: %s, categorised as: %s:%s",
-                        image, index, name)
-
-    if save is not None:
-        fmn.save(save)
+        greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        class_index, class_name = fmn.test(greyscale)
+        LOGGER.info("Image: %s, categorised as: %s:%s",
+                    image, class_index, class_name)

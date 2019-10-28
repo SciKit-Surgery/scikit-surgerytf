@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Module to implement a classifier for the Fashion MNIST dataset.
+Module to implement a basic classifier for the Fashion MNIST dataset.
+The aim of this module is to demonstrate how to create a class
+that can be developed, tested and re-used effectively. It is not
+a demonstration on how to do deep learning, or classification per se.
 
 Inspired by
 `TensorFlow tutorials
@@ -32,7 +35,7 @@ class FashionMNIST:
         If the constructor is called with weights, these are loaded, as is,
         with no further training.
 
-        :param weights file name of pre-saved weights.
+        :param weights file name prefix of pre-saved weights.
         """
         self.model = None
         self.train_images = None
@@ -53,7 +56,10 @@ class FashionMNIST:
 
     def get_class_names(self):
         """
-        Returns a copy of the valid class names.
+        Returns a copy of the valid class names. We return copies
+        to stop external people editing the internal copies. It's
+        safer in the long run.
+
         :return: list of strings
         """
         return copy.deepcopy(self.class_names)
@@ -77,13 +83,14 @@ class FashionMNIST:
         """
         Pre-processes the data. For this data set we just:
 
-          - Normalise unsigned char [0-255] to [0-1] float.
+          - Normalise unsigned char [0-255] to float [0-1].
 
         :param images (m x 28 x 28) numpy, single channel, [0-255], uchar
         :returns normalised (m x 28 x 28) numpy, single channel, [0-255], float
         """
         return images / 255.0
 
+    # pylint: disable=
     def build_model(self):
         """
         Constructs the neural network.
@@ -91,6 +98,14 @@ class FashionMNIST:
           - 128 node FC + relu
           - 10 node FC + softmax
 
+        For the purpose of this demo, the network is irrelevant.
+        Its the same one, copied from
+        `TensorFlow tutorials
+        <https://www.tensorflow.org/tutorials/keras/classification>`_.
+
+        Other examples include
+        `this one
+        https://medium.com/tensorflow/hello-deep-learning-fashion-mnist-with-keras-50fcff8cd74a`_.
         """
         self.model = keras.Sequential([
             keras.layers.Flatten(input_shape=(28, 28)),
@@ -168,15 +183,15 @@ def run_fashion_model(load, image, save):
     :param image: image to test
     :param save: file to save weights to
     """
-
+    # pylint: disable=line-too-long
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    ch.setFormatter(formatter)
-    root_logger.addHandler(ch)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(formatter)
+    root_logger.addHandler(handler)
 
     fmn = FashionMNIST(load)
 

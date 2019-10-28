@@ -1,5 +1,12 @@
 /sksurgerytf.rst
 /sksurgerytf.*.rst
+/sksurgeryfashion.rst
 /modules.rst
 /versioneer.rst
 /build
+
+# Mac Finder:
+.DS_Store
+
+# Virtual Environment
+venv/

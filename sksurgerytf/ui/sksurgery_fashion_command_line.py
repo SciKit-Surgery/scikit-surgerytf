@@ -1,6 +1,6 @@
 # coding=utf-8
 
-""" Command line processing for sksurgeryfashion (tutorial). """
+""" Command line entry point for sksurgeryfashion demo. """
 
 import argparse
 from sksurgerytf import __version__
@@ -9,7 +9,9 @@ import sksurgerytf.models.fashion as f
 
 def main(args=None):
     """
-    Entry point for sksurgeryfashion command line application.
+    Entry point for sksurgeryfashion demo.
+
+    Keep as little code as possible in this file, as it's hard to unit test.
     """
     parser = argparse.ArgumentParser(description='sksurgeryfashion')
 

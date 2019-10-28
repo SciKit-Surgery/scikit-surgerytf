@@ -8,13 +8,16 @@ Inspired by
 <https://www.tensorflow.org/tutorials/keras/classification>`_.
 
 """
-import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+import cv2
 
 
 class FashionMNIST:
+    """
+    Class to encapsulate a classifier for the Fashion MNIST dataset.
+    """
     def __init__(self, weights=None):
         """
         Class to implement a 10-class classifier for the Fashion MNIST dataset,
@@ -40,8 +43,7 @@ class FashionMNIST:
         self.build_model()
 
         if weights is not None:
-            # Load weights from file
-            pass
+            self.model.load_weights(weights)
         else:
             self.load_data()
             self.train()
@@ -50,7 +52,7 @@ class FashionMNIST:
         """
         Loads the data.
 
-        fashion_mnist is available from TF directly, and fortunately,
+        fashion_mnist is available from TF/Keras directly, and fortunately,
         it get's cached on your computer. So, subsequent calls are fast.
         """
         (self.train_images, self.train_labels), \
@@ -76,8 +78,8 @@ class FashionMNIST:
         """
         Constructs the neural network.
 
-          - 128 FC + relu
-          - 10 FC + softmax
+          - 128 node FC + relu
+          - 10 node FC + softmax
 
         """
         self.model = keras.Sequential([
@@ -126,7 +128,24 @@ class FashionMNIST:
         Method to save the network to disk.
         :param filename: file to save to
         """
-        pass
+        if self.model is None:
+            raise ValueError("Model has not been created.")
+
+        self.model.save_weights(filename)
+
+    def get_test_image(self, index):
+        """
+        Extracts an image from the test data. Useful for unit testing,
+        as the original data comes packaged up in a zip file.
+
+        :param index: int [0-9999], unchecked
+        :return: image, (28 x 28), numpy, single channel, [0-255], uchar.
+        """
+        if self.test_images is None:
+            self.load_data()
+        img = self.test_images[index, :, :]
+        reshaped = img.reshape([28, 28])
+        return reshaped
 
 
 def run_fashion_model(load, image, save):

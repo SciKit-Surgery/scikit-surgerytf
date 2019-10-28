@@ -49,7 +49,8 @@ Each project herein should provide the following:
 * Visualisation with TensorBoard.
 * The ability to be run repeatedly for hyper-parameter tuning via python scripting, not bash.
 * The ability to be callable from within a Jupyter Notebook, and thereby amenable to weekly writup's for supervisions.
-* One or more command line programs that are pip-installable, providing a subsequent user to train and test your algorithm.
+* One or more command line programs that are pip-installable, enabling a subsequent user to train and test your algorithm.
+* Visualisation for debugging purposes should be done in Jupyter notebooks, not in the same class as your algorithm
 
 
 Developing

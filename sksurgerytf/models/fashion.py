@@ -167,8 +167,14 @@ def run_fashion_model(load, image, save):
     :param save: file to save weights to
     """
 
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(formatter)
+    root_logger.addHandler(ch)
 
     fmn = FashionMNIST(load)
 

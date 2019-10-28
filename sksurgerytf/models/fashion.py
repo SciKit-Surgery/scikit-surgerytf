@@ -35,7 +35,7 @@ class FashionMNIST:
         If the constructor is called with weights, these are loaded, as is,
         with no further training.
 
-        :param weights file name prefix of pre-saved weights.
+        :param weights: file name prefix of pre-saved weights.
         """
         self.model = None
         self.train_images = None
@@ -85,12 +85,11 @@ class FashionMNIST:
 
           - Normalise unsigned char [0-255] to float [0-1].
 
-        :param images (m x 28 x 28) numpy, single channel, [0-255], uchar
-        :returns normalised (m x 28 x 28) numpy, single channel, [0-255], float
+        :param images: (m x 28 x 28) numpy, single channel, [0-255], uchar
+        :return: normalised (m x 28 x 28) numpy, single channel, [0-255], float
         """
         return images / 255.0
 
-    # pylint: disable=
     def build_model(self):
         """
         Constructs the neural network.
@@ -103,9 +102,9 @@ class FashionMNIST:
         `TensorFlow tutorials
         <https://www.tensorflow.org/tutorials/keras/classification>`_.
 
-        Other examples include
+        Other examples you could experiment with include
         `this one
-        https://medium.com/tensorflow/hello-deep-learning-fashion-mnist-with-keras-50fcff8cd74a`_.
+        <https://medium.com/tensorflow/hello-deep-learning-fashion-mnist-with-keras-50fcff8cd74a>`_.
         """
         self.model = keras.Sequential([
             keras.layers.Flatten(input_shape=(28, 28)),
@@ -153,6 +152,7 @@ class FashionMNIST:
     def save_weights(self, filename):
         """
         Method to save the network weights to disk.
+
         :param filename: file to save to
         """
         self.model.save_weights(filename)

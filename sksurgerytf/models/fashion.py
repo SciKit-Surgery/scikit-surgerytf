@@ -15,9 +15,13 @@ import os
 import logging
 import copy
 import datetime
+import getpass
+import platform
 import numpy as np
 from tensorflow import keras
 import cv2
+
+from sksurgerytf import __version__
 
 LOGGER = logging.getLogger(__name__)
 
@@ -212,7 +216,11 @@ def run_fashion_model(logs,
     handler.setLevel(logging.INFO)
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
+    username = getpass.getuser()
 
+    LOGGER.info("Starting fashion.py version: %s", __version__)
+    LOGGER.info("Starting fashion.py with username: %s.", username)
+    LOGGER.info("Starting fashion.py with platform: %s.", str(platform.uname()))
     fmn = FashionMNIST(logs, weights)
 
     if save is not None:

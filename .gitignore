@@ -13,3 +13,7 @@ dist/
 
 # Unit test output
 tests/output
+
+# Tensorboard output
+logs/
+

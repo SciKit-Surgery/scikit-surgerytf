@@ -11,8 +11,10 @@ Inspired by
 <https://www.tensorflow.org/tutorials/keras/classification>`_.
 
 """
+import os
 import logging
 import copy
+import datetime
 import numpy as np
 from tensorflow import keras
 import cv2
@@ -24,7 +26,7 @@ class FashionMNIST:
     """
     Class to encapsulate a classifier for the Fashion MNIST dataset.
     """
-    def __init__(self, weights=None):
+    def __init__(self, logs="logs/fit", weights=None):
         """
         Class to implement a 10-class classifier for the Fashion MNIST dataset,
         and provide entry points for both training and testing.
@@ -37,6 +39,7 @@ class FashionMNIST:
 
         :param weights: file name prefix of pre-saved weights.
         """
+        self.logs = logs
         self.model = None
         self.train_images = None
         self.train_labels = None
@@ -130,11 +133,24 @@ class FashionMNIST:
 
         Default parameters for demo purposes, 10 epochs.
         """
-        self.model.fit(self.train_images, self.train_labels, epochs=10)
+
+        log_dir = os.path.join(self.logs,
+                               datetime.datetime.now()
+                               .strftime("%Y%m%d-%H%M%S"))
+        tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
+                                                           histogram_freq=1)
+
+        self.model.fit(self.train_images,
+                       self.train_labels,
+                       epochs=10,
+                       validation_data=(self.test_images, self.test_labels),
+                       callbacks=[tensorboard_callback]
+                       )
 
         self.model.evaluate(self.test_images,
                             self.test_labels,
-                            verbose=2)
+                            verbose=2,
+                            )
 
     def test(self, image):
         """
@@ -174,12 +190,16 @@ class FashionMNIST:
         return output
 
 
-def run_fashion_model(load, image, save):
+def run_fashion_model(logs,
+                      weights,
+                      image,
+                      save):
     """
     Helper function to run the Fashion MNIST model from
     the command line entry point.
 
-    :param load: file of previously trained weights
+    :param logs: directory for log files for tensorboard.
+    :param weights: file of previously trained weights
     :param image: image to test
     :param save: file to save weights to
     """
@@ -193,7 +213,7 @@ def run_fashion_model(load, image, save):
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 
-    fmn = FashionMNIST(load)
+    fmn = FashionMNIST(logs, weights)
 
     if save is not None:
         fmn.save_weights(save)

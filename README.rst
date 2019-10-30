@@ -50,7 +50,7 @@ Each project herein should provide the following:
 * The ability to be run repeatedly for hyper-parameter tuning via python scripting, not bash.
 * The ability to be callable from within a Jupyter Notebook, and thereby amenable to weekly writup's for supervisions.
 * One or more command line programs that are pip-installable, enabling a subsequent user to train and test your algorithm with almost-zero faff.
-* Visualisation for debugging purposes, such as printing example image thumbnails etc. should be done in Jupyter notebooks, not in the same class as your algorithm.
+* Visualisation for debugging purposes, such as printing example image thumbnails etc. should be done in Jupyter notebooks, or in tensorboard, not in the same class as your algorithm.
 
 Optional features could include:
 

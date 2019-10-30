@@ -221,6 +221,8 @@ def run_fashion_model(logs,
     LOGGER.info("Starting fashion.py version: %s", __version__)
     LOGGER.info("Starting fashion.py with username: %s.", username)
     LOGGER.info("Starting fashion.py with platform: %s.", str(platform.uname()))
+    LOGGER.info("Starting fashion.py with cwd: %s.", os.getcwd())
+
     fmn = FashionMNIST(logs, weights)
 
     if save is not None:

@@ -16,7 +16,6 @@ import sys
 import logging
 import copy
 import datetime
-import getpass
 import platform
 import ssl
 from pathlib import Path
@@ -245,10 +244,8 @@ def run_fashion_model(logs,
     handler.setLevel(logging.INFO)
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
-    username = getpass.getuser()
 
     LOGGER.info("Starting fashion.py version: %s", __version__)
-    LOGGER.info("Starting fashion.py with username: %s.", username)
     LOGGER.info("Starting fashion.py with platform: %s.", str(platform.uname()))
     LOGGER.info("Starting fashion.py with cwd: %s.", os.getcwd())
     LOGGER.info("Starting fashion.py with path: %s.", sys.path)

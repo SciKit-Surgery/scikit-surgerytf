@@ -19,6 +19,7 @@ import datetime
 import getpass
 import platform
 import ssl
+from pathlib import Path
 import numpy as np
 from tensorflow import keras
 import cv2
@@ -166,7 +167,7 @@ class FashionMNIST:
         :return: output of self.model.evaluate on test set.
         """
 
-        log_dir = os.path.join(self.logs,
+        log_dir = os.path.join(Path(self.logs),
                                datetime.datetime.now()
                                .strftime("%Y%m%d-%H%M%S"))
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,

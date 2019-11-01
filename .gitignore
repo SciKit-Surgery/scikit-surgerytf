@@ -16,4 +16,4 @@ tests/output
 
 # Tensorboard output
 logs/
-
+doc/notebooks/logs/

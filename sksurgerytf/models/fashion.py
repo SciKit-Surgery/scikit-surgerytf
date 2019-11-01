@@ -31,7 +31,12 @@ class FashionMNIST:
     """
     Class to encapsulate a classifier for the Fashion MNIST dataset.
     """
-    def __init__(self, logs="logs/fit", weights=None):
+    def __init__(self,
+                 logs="logs/fit",
+                 weights=None,
+                 learning_rate=0.001,
+                 epochs=1
+                 ):
         """
         Class to implement a 10-class classifier for the Fashion MNIST dataset,
         and provide entry points for both training and testing.
@@ -42,9 +47,24 @@ class FashionMNIST:
         If the constructor is called with weights, these are loaded, as is,
         with no further training.
 
+        :param logs: relative path to folder to write tensorboard log files.
         :param weights: file name prefix of pre-saved weights.
+        :param learning_rate: float, default=0.001 which is Keras default.
+        :param epochs: int, default=1
         """
         self.logs = logs
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+
+        LOGGER.info("Creating FashionMNIST with log dir: %s.",
+                    str(self.logs))
+        LOGGER.info("Creating FashionMNIST with weights file: %s.",
+                    str(weights))
+        LOGGER.info("Creating FashionMNIST with learning_rate: %s.",
+                    str(self.learning_rate))
+        LOGGER.info("Creating FashionMNIST with epochs: %s.",
+                    str(self.epochs))
+
         self.model = None
         self.train_images = None
         self.train_labels = None
@@ -65,8 +85,8 @@ class FashionMNIST:
     def get_class_names(self):
         """
         Returns a copy of the valid class names. We return copies
-        to stop external people editing the internal copies. It's
-        safer in the long run.
+        to stop external people accidentally editing the internal copies.
+        It's safer in the long run, even if its easy to work around.
 
         :return: list of strings
         """
@@ -120,7 +140,9 @@ class FashionMNIST:
             keras.layers.Dense(10, activation='softmax')
         ])
 
-        self.model.compile(optimizer='adam',
+        optimiser = keras.optimizers.Adam(learning_rate=self.learning_rate)
+
+        self.model.compile(optimizer=optimiser,
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
 
@@ -136,7 +158,7 @@ class FashionMNIST:
           - sparse_categorical_crossentropy cost function
           - evaluates accuracy metric
 
-        Default parameters for demo purposes, 10 epochs.
+        :return: output of self.model.evaluate on test set.
         """
 
         log_dir = os.path.join(self.logs,
@@ -147,15 +169,15 @@ class FashionMNIST:
 
         self.model.fit(self.train_images,
                        self.train_labels,
-                       epochs=10,
+                       epochs=self.epochs,
                        validation_data=(self.test_images, self.test_labels),
                        callbacks=[tensorboard_callback]
                        )
 
-        self.model.evaluate(self.test_images,
-                            self.test_labels,
-                            verbose=2,
-                            )
+        return self.model.evaluate(self.test_images,
+                                   self.test_labels,
+                                   verbose=2,
+                                   )
 
     def test(self, image):
         """

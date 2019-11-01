@@ -12,6 +12,7 @@ Inspired by
 
 """
 import os
+import sys
 import logging
 import copy
 import datetime
@@ -222,6 +223,7 @@ def run_fashion_model(logs,
     LOGGER.info("Starting fashion.py with username: %s.", username)
     LOGGER.info("Starting fashion.py with platform: %s.", str(platform.uname()))
     LOGGER.info("Starting fashion.py with cwd: %s.", os.getcwd())
+    LOGGER.info("Starting fashion.py with path: %s.", sys.path)
 
     fmn = FashionMNIST(logs, weights)
 

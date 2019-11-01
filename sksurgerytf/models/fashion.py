@@ -18,9 +18,11 @@ import copy
 import datetime
 import getpass
 import platform
+import ssl
 import numpy as np
 from tensorflow import keras
 import cv2
+
 
 from sksurgerytf import __version__
 
@@ -64,6 +66,9 @@ class FashionMNIST:
                     str(self.learning_rate))
         LOGGER.info("Creating FashionMNIST with epochs: %s.",
                     str(self.epochs))
+
+        # To fix issues with SSL certificates
+        ssl._create_default_https_context = ssl._create_unverified_context
 
         self.model = None
         self.train_images = None

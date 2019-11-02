@@ -17,3 +17,7 @@ tests/output
 # Tensorboard output
 logs/
 doc/notebooks/logs/
+
+# Jupyter output
+doc/notebooks/.ipynb_checkpoints/
+

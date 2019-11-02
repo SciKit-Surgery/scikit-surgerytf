@@ -91,31 +91,6 @@ test Windows:
   dependencies:
     - build docs
 
-deploy docs to staging:
-  <<: *deploy-docs-skip-template
-  script:
-    # Note: the group/username directory must already exist on the server before calling this command
-    - rsync -avz -e'ssh -v' --numeric-ids --delete doc/build/html/* staging_docs_rsync:WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf 2>&1
-  tags:
-    - docs-staging
-  environment:
-    name: staging
-    url: http://weisslab-lin.cs.ucl.ac.uk/staging/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
-  only:
-    - master
-
-deploy docs to production:
-  <<: *deploy-docs-skip-template
-  script:
-    # Note: the group/username directory must already exist on the server before calling this command
-    - rsync -avz -e'ssh -v' --numeric-ids --delete doc/build/html/* production_docs_rsync:WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf 2>&1
-  tags:
-    - docs-production
-  environment:
-    name: production
-  only:
-    - public
-
 deploy pip to PyPI:
   stage: deploy
   when: manual

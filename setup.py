@@ -19,7 +19,7 @@ setup(
     long_description_content_type='text/x-rst',
     url='https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf',
     author='Matt Clarkson',
-    author_email='YOUR-EMAIL@ucl.ac.uk',
+    author_email='m.clarkson@ucl.ac.uk',
     license='Apache Software License 2.0',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -29,9 +29,7 @@ setup(
         'Intended Audience :: Information Technology',
         'Intended Audience :: Science/Research',
 
-
-       'License :: OSI Approved :: Apache Software License',
-
+        'License :: OSI Approved :: Apache Software License',
 
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
@@ -51,13 +49,14 @@ setup(
     ),
 
     install_requires=[
-        'six>=1.10',
-        'numpy>=1.11',
+        'tensorflow==2.0.0',
+        'tensorflow-datasets==1.3.0'
+        'matplotlib=3.1.1'
     ],
 
     entry_points={
         'console_scripts': [
-            'sksurgerytf=sksurgerytf.__main__:main',
+            'sksurgeryfashion=sksurgerytf.ui.sksurgery_fashion_command_line:main',
         ],
     },
 )

@@ -3,4 +3,6 @@ omit =
         ./sksurgerytf/_version.py
         ./sksurgerytf/__init__.py
         ./sksurgerytf/__main__.py
-        ./sksurgerytf/ui/sksurgerytf_command_line.py
+        ./sksurgerytf/ui/sksurgery_fashion_command_line.py
+        ./sksurgerytf/ui/__init__.py
+        ./sksurgerytf/models/__init__.py

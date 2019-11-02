@@ -221,6 +221,34 @@ class FashionMNIST:
         output = rescaled.astype(np.uint8)
         return output
 
+    def extract_failures(self, number_to_fetch):
+        """
+        Returns incorrectly classified test images.
+        :param number_to_fetch: int, the number to find.
+
+        This method is slow, its only for demo purposes.
+
+        :return: indexes, images, predicted, labels
+        """
+        indexes = []
+        images = []
+        predicted = []
+        labels = []
+
+        if self.test_images is None:
+            self.load_data()
+        for counter in range(self.test_images.shape[0]):
+            image = self.get_test_image(counter)
+            class_index, _ = self.test(image)
+            if class_index != self.test_labels[counter]:
+                indexes.append(counter)
+                images.append(image)
+                predicted.append(class_index)
+                labels.append(self.test_labels[counter])
+                if len(indexes) == number_to_fetch:
+                    break
+        return indexes, images, predicted, labels
+
 
 def run_fashion_model(logs,
                       weights,

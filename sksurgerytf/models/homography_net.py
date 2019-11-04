@@ -82,6 +82,7 @@ class HomographyNet:
         """
         Loads the data.
         """
+        # pylint: disable=unnecessary-pass
         pass
 
     @staticmethod
@@ -94,6 +95,7 @@ class HomographyNet:
         :param images: (m x 28 x 28) numpy, RGB, [0-255], uchar
         :return: normalised (m x 28 x 28) numpy, RGB, [0-1], float
         """
+        # pylint: disable=unnecessary-pass
         pass
 
     def build_model(self):
@@ -103,6 +105,7 @@ class HomographyNet:
           - To Do
 
         """
+        # pylint: disable=unnecessary-pass
         pass
 
     def train(self):
@@ -121,6 +124,9 @@ class HomographyNet:
                                .strftime("%Y%m%d-%H%M%S"))
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
                                                            histogram_freq=1)
+
+        # To do...
+        print(tensorboard_callback)
 
     def test(self, image_a, image_b):
         """

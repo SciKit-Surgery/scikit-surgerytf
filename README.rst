@@ -95,13 +95,13 @@ You can pip install directly from the repository as follows:
 
 
 Contributing
-----------
+------------
 
 Please see the `contributing guidelines`_.
 
 
 Useful links
-----------
+------------
 
 * `Source code repository`_
 * `Documentation`_

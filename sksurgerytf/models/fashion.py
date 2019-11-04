@@ -119,7 +119,7 @@ class FashionMNIST:
           - Normalise unsigned char [0-255] to float [0-1].
 
         :param images: (m x 28 x 28) numpy, single channel, [0-255], uchar
-        :return: normalised (m x 28 x 28) numpy, single channel, [0-255], float
+        :return: normalised (m x 28 x 28) numpy, single channel, [0-1], float
         """
         return images / 255.0
 

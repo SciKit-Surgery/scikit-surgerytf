@@ -2,13 +2,16 @@
 
 """
 Module to implement HomographyNet by Daniel Detone et al. (2016).
+Currently, we only implement the regression model, not the classification
+model.
 
 The paper is on
 `arXiv.org
 <https://arxiv.org/abs/1606.03798>`_.
 
 Again, this was written as a learning exercise, and as a tutorial, but
-is actually useful!
+is actually useful! The aim was to demonstrate how to use TensorFlow
+DataSet API to work with a common ML dataset.
 """
 import os
 import sys
@@ -39,7 +42,8 @@ class HomographyNet:
                  ):
         """
         Class to implement HomographyNet and provide entry
-        points for both training and testing.
+        points for both training and testing. Currently we only implement
+        the regression model, not the classification model.
 
         If the constructor is called without weights, the data is loaded
         and a full training cycle is performed in order to learn the weights.

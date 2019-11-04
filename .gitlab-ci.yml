@@ -63,7 +63,7 @@ test Linux:
   script:
     - tox
   tags:
-    - shared-linux
+    - shared-linux, tensorflow
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
 test macOS:

@@ -35,7 +35,7 @@ class FashionMNIST:
     """
     def __init__(self,
                  logs="logs/fit",
-                 weights=None,
+                 model=None,
                  learning_rate=0.001,
                  epochs=1
                  ):
@@ -47,11 +47,12 @@ class FashionMNIST:
         and a full training cycle is performed in order to learn the weights.
 
         If the constructor is called with weights, these are loaded, as is,
-        with no further training.
+        with no further training. If you want to continue training, call
+        the train method again.
 
         :param logs: relative path to folder to write tensorboard log files.
-        :param weights: file name prefix of pre-saved weights.
-        :param learning_rate: float, default=0.001 which is Keras default.
+        :param model: file name of previously saved model.
+        :param learning_rate: float, default=0.001 which is the Keras default.
         :param epochs: int, default=1
         """
         self.logs = logs
@@ -60,14 +61,14 @@ class FashionMNIST:
 
         LOGGER.info("Creating FashionMNIST with log dir: %s.",
                     str(self.logs))
-        LOGGER.info("Creating FashionMNIST with weights file: %s.",
-                    str(weights))
+        LOGGER.info("Creating FashionMNIST with model file: %s.",
+                    str(model))
         LOGGER.info("Creating FashionMNIST with learning_rate: %s.",
                     str(self.learning_rate))
         LOGGER.info("Creating FashionMNIST with epochs: %s.",
                     str(self.epochs))
 
-        # To fix issues with SSL certificates
+        # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
 
         self.model = None
@@ -79,25 +80,24 @@ class FashionMNIST:
                             'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker',
                             'Bag', 'Ankle boot']
 
-        self.build_model()
-
-        if weights is not None:
-            self.model.load_weights(weights)
-        else:
-            self.load_data()
+        if model is None:
+            self.__build_model()
+            self.__load_data()
             self.train()
+        else:
+            self.model = keras.models.load_model(model)
 
     def get_class_names(self):
         """
         Returns a copy of the valid class names. We return copies
         to stop external people accidentally editing the internal copies.
-        It's safer in the long run, even if its easy to work around.
+        It's safer in the long run, although in Python easy to work around.
 
         :return: list of strings
         """
         return copy.deepcopy(self.class_names)
 
-    def load_data(self):
+    def __load_data(self):
         """
         Loads the data.
 
@@ -119,13 +119,13 @@ class FashionMNIST:
           - Normalise unsigned char [0-255] to float [0-1].
 
         :param images: (m x 28 x 28) numpy, single channel, [0-255], uchar
-        :return: normalised (m x 28 x 28) numpy, single channel, [0-255], float
+        :return: normalised (m x 28 x 28) numpy, single channel, [0-1], float
         """
         return images / 255.0
 
-    def build_model(self):
+    def __build_model(self):
         """
-        Constructs the neural network.
+        Constructs the neural network, and compiles it.
 
           - 128 node FC + relu
           - 10 node FC + softmax
@@ -138,6 +138,15 @@ class FashionMNIST:
         Other examples you could experiment with include
         `this one
         <https://medium.com/tensorflow/hello-deep-learning-fashion-mnist-with-keras-50fcff8cd74a>`_.
+
+        For demo purposes, this uses:
+
+          - Adam optimiser
+          - sparse_categorical_crossentropy cost function
+          - evaluates accuracy metric
+
+        This is not a comprehensive list of all the things that you
+        could tweak and write about. Its just a demo.
         """
         self.model = keras.Sequential([
             keras.layers.Flatten(input_shape=(28, 28)),
@@ -155,13 +164,8 @@ class FashionMNIST:
 
     def train(self):
         """
-        Method to train the neural network.
-
-        Uses:
-
-          - Adam optimiser
-          - sparse_categorical_crossentropy cost function
-          - evaluates accuracy metric
+        Method to train the neural network. Writes each epoch
+        to tensorboard log files.
 
         :return: output of self.model.evaluate on test set.
         """
@@ -197,13 +201,13 @@ class FashionMNIST:
         class_index = np.argmax(predictions[0])
         return class_index, self.class_names[class_index]
 
-    def save_weights(self, filename):
+    def save_model(self, filename):
         """
-        Method to save the network weights to disk.
+        Method to save the whole trained network to disk.
 
-        :param filename: file to save to
+        :param filename: file to save to.
         """
-        self.model.save_weights(filename)
+        self.model.save(filename)
 
     def get_test_image(self, index):
         """
@@ -214,7 +218,7 @@ class FashionMNIST:
         :return: image, (28 x 28), numpy, single channel, [0-255], uchar.
         """
         if self.test_images is None:
-            self.load_data()
+            self.__load_data()
         img = self.test_images[index, :, :]
         reshaped = img.reshape([28, 28])
         rescaled = reshaped * 255
@@ -236,7 +240,7 @@ class FashionMNIST:
         labels = []
 
         if self.test_images is None:
-            self.load_data()
+            self.__load_data()
         for counter in range(self.test_images.shape[0]):
             image = self.get_test_image(counter)
             class_index, _ = self.test(image)
@@ -251,17 +255,17 @@ class FashionMNIST:
 
 
 def run_fashion_model(logs,
-                      weights,
-                      image,
-                      save):
+                      model,
+                      save,
+                      test):
     """
     Helper function to run the Fashion MNIST model from
     the command line entry point.
 
     :param logs: directory for log files for tensorboard.
-    :param weights: file of previously trained weights
-    :param image: image to test
+    :param model: file of previously saved model.
     :param save: file to save weights to
+    :param test: image to test
     """
     # pylint: disable=line-too-long
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -278,14 +282,14 @@ def run_fashion_model(logs,
     LOGGER.info("Starting fashion.py with cwd: %s.", os.getcwd())
     LOGGER.info("Starting fashion.py with path: %s.", sys.path)
 
-    fmn = FashionMNIST(logs, weights)
+    fmn = FashionMNIST(logs, model)
 
     if save is not None:
-        fmn.save_weights(save)
+        fmn.save_model(save)
 
-    if image is not None:
-        img = cv2.imread(image)
+    if test is not None:
+        img = cv2.imread(test)
         greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         class_index, class_name = fmn.test(greyscale)
         LOGGER.info("Image: %s, categorised as: %s:%s",
-                    image, class_index, class_name)
+                    test, class_index, class_name)

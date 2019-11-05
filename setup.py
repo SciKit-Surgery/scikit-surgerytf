@@ -60,6 +60,7 @@ setup(
     entry_points={
         'console_scripts': [
             'sksurgeryfashion=sksurgerytf.ui.sksurgery_fashion_command_line:main',
+            'sksurgeryhomographynet=sksurgerytf.ui.sksurgery_homography_net_command_line:main',
         ],
     },
 )

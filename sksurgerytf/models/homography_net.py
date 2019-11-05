@@ -147,29 +147,29 @@ class HomographyNet:
         predictions = self.model.predict(img_a, img_b)
         return predictions
 
-    def save_weights(self, filename):
+    def save_model(self, filename):
         """
-        Method to save the network weights to disk.
+        Method to save the whole trained network to disk.
 
-        :param filename: file to save to
+        :param filename: file to save to.
         """
-        self.model.save_weights(filename)
+        self.model.save(filename)
 
 
 def run_homography_net_model(logs,
-                             weights,
-                             image_a,
-                             image_b,
-                             save):
+                             model,
+                             save,
+                             test_a,
+                             test_b):
     """
     Helper function to run the HomographyNet model from
     the command line entry point.
 
     :param logs: directory for log files for tensorboard.
-    :param weights: file of previously trained weights
-    :param image_a: first of a pair of images to test
-    :param image_b: second of a pair of images to test
-    :param save: file to save weights to
+    :param model: file of previously saved model.
+    :param save: file to save model to.
+    :param test_a: first of a pair of images to test.
+    :param test_b: second of a pair of images to test.
     """
     # pylint: disable=line-too-long
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -186,18 +186,18 @@ def run_homography_net_model(logs,
     LOGGER.info("Starting homography_net.py with cwd: %s.", os.getcwd())
     LOGGER.info("Starting homography_net.py with path: %s.", sys.path)
 
-    fmn = HomographyNet(logs, weights)
+    fmn = HomographyNet(logs, model)
 
     if save is not None:
-        fmn.save_weights(save)
+        fmn.save_model(save)
 
-    if image_a is not None and image_b is not None:
-        img_a = cv2.imread(image_a)
-        img_a_as_rgb = cv2.cvtColor(img_a, cv2.COLOR_BGR2RGB)
-        img_b = cv2.imread(image_b)
-        img_b_as_rgb = cv2.cvtColor(img_b, cv2.COLOR_BGR2RGB)
+    if test_a is not None and test_b is not None:
+        img_a = cv2.imread(test_a)
+        img_a_as_grey = cv2.cvtColor(img_a, cv2.COLOR_BGR2GRAY)
+        img_b = cv2.imread(test_b)
+        img_b_as_grey = cv2.cvtColor(img_b, cv2.COLOR_BGR2GRAY)
 
-        params, matrix = fmn.test(img_a_as_rgb, img_b_as_rgb)
+        params, matrix = fmn.test(img_a_as_grey, img_b_as_grey)
 
         LOGGER.info("Images: %s, %s give:\n%s\n%s",
-                    image_a, image_b, params, matrix)
+                    test_a, test_b, params, matrix)

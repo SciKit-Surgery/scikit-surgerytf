@@ -203,7 +203,7 @@ class FashionMNIST:
 
     def save_model(self, filename):
         """
-        Method to save the whole network to disk.
+        Method to save the whole trained network to disk.
 
         :param filename: file to save to.
         """

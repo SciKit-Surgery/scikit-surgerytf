@@ -21,25 +21,25 @@ def main(args=None):
                         default="logs/fit/",
                         help="Log directory for tensorboard.")
 
-    parser.add_argument("-w", "--weights",
+    parser.add_argument("-m", "--model",
                         required=False,
                         type=str,
-                        help="Load pre-trained weights file.")
-
-    parser.add_argument("-a", "--imageA",
-                        required=False,
-                        type=str,
-                        help="Test image A, RGB.")
-
-    parser.add_argument("-b", "--imageB",
-                        required=False,
-                        type=str,
-                        help="Test image B, RGB.")
+                        help="Load complete pre-trained model (normally .hd5).")
 
     parser.add_argument("-s", "--save",
                         required=False,
                         type=str,
-                        help="Save weights file.")
+                        help="Save model (normally .hd5).")
+
+    parser.add_argument("-a", "--testA",
+                        required=False,
+                        type=str,
+                        help="Test image A, RGB.")
+
+    parser.add_argument("-b", "--testB",
+                        required=False,
+                        type=str,
+                        help="Test image B, RGB.")
 
     version_string = __version__
     friendly_version_string = version_string if version_string else 'unknown'
@@ -51,7 +51,8 @@ def main(args=None):
     args = parser.parse_args(args)
 
     m.run_homography_net_model(args.logs,
-                               args.weights,
-                               args.imageA,
-                               args.imageB,
-                               args.save)
+                               args.model,
+                               args.save,
+                               args.testA,
+                               args.testB
+                               )

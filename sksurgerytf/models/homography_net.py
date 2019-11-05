@@ -36,7 +36,7 @@ class HomographyNet:
     """
     def __init__(self,
                  logs="logs/fit",
-                 weights=None,
+                 model=None,
                  learning_rate=0.001,
                  epochs=1
                  ):
@@ -49,10 +49,11 @@ class HomographyNet:
         and a full training cycle is performed in order to learn the weights.
 
         If the constructor is called with weights, these are loaded, as is,
-        with no further training.
+        with no further training. If you want to continue training, call
+        the train method again.
 
         :param logs: relative path to folder to write tensorboard log files.
-        :param weights: file name prefix of pre-saved weights.
+        :param model: file name of previously saved model.
         :param learning_rate: float, default=0.001 which is the Keras default.
         :param epochs: int, default=1
         """
@@ -63,7 +64,7 @@ class HomographyNet:
         LOGGER.info("Creating HomographyNet with log dir: %s.",
                     str(self.logs))
         LOGGER.info("Creating HomographyNet with weights file: %s.",
-                    str(weights))
+                    str(model))
         LOGGER.info("Creating HomographyNet with learning_rate: %s.",
                     str(self.learning_rate))
         LOGGER.info("Creating HomographyNet with epochs: %s.",
@@ -74,15 +75,14 @@ class HomographyNet:
 
         self.model = None
 
-        self.build_model()
-
-        if weights is not None:
-            self.model.load_weights(weights)
-        else:
-            self.load_data()
+        if model is None:
+            self.__build_model()
+            self.__load_data()
             self.train()
+        else:
+            self.model = keras.models.load_model(model)
 
-    def load_data(self):
+    def __load_data(self):
         """
         Loads the data.
         """
@@ -102,7 +102,7 @@ class HomographyNet:
         # pylint: disable=unnecessary-pass
         pass
 
-    def build_model(self):
+    def __build_model(self):
         """
         Constructs the neural network.
 

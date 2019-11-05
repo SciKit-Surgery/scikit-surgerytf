@@ -68,7 +68,7 @@ class FashionMNIST:
         LOGGER.info("Creating FashionMNIST with epochs: %s.",
                     str(self.epochs))
 
-        # To fix issues with SSL certificates
+        # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
 
         self.model = None

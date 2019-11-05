@@ -21,7 +21,7 @@ def test_train_then_test():
 
 
 def test_load_weights_then_test():
-    fmnist = f.FashionMNIST('logs/fit', 'tests/output/fashion/test_train_then_test.h5')
+    fmnist = f.FashionMNIST('logs/fit', 'tests/data/fashion/test_train_then_test.h5')
     img = cv2.imread('tests/data/fashion/test_train_then_test.png')
     greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     class_index, class_name = fmnist.test(greyscale)

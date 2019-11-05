@@ -17,11 +17,11 @@ def test_train_then_test():
     class_index, class_name = fmnist.test(img)
     class_names = fmnist.get_class_names()
     assert class_name == class_names[class_index]
-    fmnist.save_weights('tests/output/fashion/test_train_then_test')
+    fmnist.save_model('tests/output/fashion/test_train_then_test.h5')
 
 
 def test_load_weights_then_test():
-    fmnist = f.FashionMNIST('logs/fit', 'tests/data/fashion/test_train_then_test')
+    fmnist = f.FashionMNIST('logs/fit', 'tests/output/fashion/test_train_then_test.h5')
     img = cv2.imread('tests/data/fashion/test_train_then_test.png')
     greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     class_index, class_name = fmnist.test(greyscale)
@@ -31,6 +31,7 @@ def test_load_weights_then_test():
 
 def test_run_fashion_model():
     f.run_fashion_model('logs/fit',
-                        'tests/data/fashion/test_train_then_test',
-                        'tests/data/fashion/test_train_then_test.png',
-                        'tests/output/fashion/save/test_run_fashion_model')
+                        'tests/data/fashion/test_train_then_test.h5',
+                        'tests/output/fashion/test_run_fashion_model.h5',
+                        'tests/data/fashion/test_train_then_test.png'
+                        )

@@ -21,20 +21,20 @@ def main(args=None):
                         default="logs/fit/",
                         help="Log directory for tensorboard.")
 
-    parser.add_argument("-w", "--weights",
+    parser.add_argument("-m", "--model",
                         required=False,
                         type=str,
-                        help="Load pre-trained weights file.")
-
-    parser.add_argument("-i", "--image",
-                        required=False,
-                        type=str,
-                        help="Test image (28 x 28), single channel.")
+                        help="Load complete pre-trained model (normally .hd5).")
 
     parser.add_argument("-s", "--save",
                         required=False,
                         type=str,
-                        help="Save weights file.")
+                        help="Save model (normally .hd5).")
+
+    parser.add_argument("-t", "--test",
+                        required=False,
+                        type=str,
+                        help="Test image (28 x 28), single channel.")
 
     version_string = __version__
     friendly_version_string = version_string if version_string else 'unknown'
@@ -46,6 +46,7 @@ def main(args=None):
     args = parser.parse_args(args)
 
     f.run_fashion_model(args.logs,
-                        args.weights,
-                        args.image,
-                        args.save)
+                        args.model,
+                        args.save,
+                        args.test
+                        )

@@ -15,9 +15,10 @@ import shutil
 from pathlib import Path
 import numpy as np
 from tensorflow import keras
+from tensorflow.keras.models import *
+from tensorflow.keras.layers import *
+from tensorflow.keras.optimizers import *
 import cv2
-
-
 from sksurgerytf import __version__
 
 LOGGER = logging.getLogger(__name__)
@@ -26,6 +27,13 @@ LOGGER = logging.getLogger(__name__)
 class LiverSeg:
     """
     Class to encapsulate LiverSeg semantic (pixelwise) segmentation network.
+
+    Thanks to
+    `Harshall Lamba <https://towardsdatascience.com/understanding-semantic-segmentation-with-unet-6be4f42d4b47>_,
+    `Zhixuhao <https://github.com/zhixuhao/unet/blob/master/model.py>`_
+    and
+    `ShawDa <https://github.com/ShawDa/unet-rgb/blob/master/unet.py>`_
+    for inspiration.
     """
     def __init__(self,
                  logs="logs/fit",
@@ -34,7 +42,9 @@ class LiverSeg:
                  omit=None,
                  model=None,
                  learning_rate=0.001,
-                 epochs=1
+                 epochs=3,
+                 batch_size=32,
+                 input_size=(512, 512, 3)
                  ):
         """
         Class to implement a CNN to extract a binary mask
@@ -53,7 +63,9 @@ class LiverSeg:
         :param omit: patient identifier to omit, when doing Leave-One-Out.
         :param model: file name of previously saved model.
         :param learning_rate: float, default=0.001 which is the Keras default.
-        :param epochs: int, default=1
+        :param epochs: int, default=1,
+        :param batch_size: int, default=32,
+        :param input_size: Expected input size for network.
         """
         self.logs = logs
         self.data = data
@@ -61,30 +73,37 @@ class LiverSeg:
         self.omit = omit
         self.learning_rate = learning_rate
         self.epochs = epochs
+        self.batch_size = batch_size
+        self.input_size = input_size
+
         self.model = None
         self.train_images_working_dir = None
         self.train_masks_working_dir = None
         self.train_generator = None
+        self.number_training_samples = None
         self.validate_images_working_dir = None
         self.validate_masks_working_dir = None
         self.validate_generator = None
-        self.image_size = (1920, 540)
-        self.input_size = (256, 256)
+        self.number_validation_samples = None
 
         LOGGER.info("Creating LiverSeg with log dir: %s.",
                     str(self.logs))
+        LOGGER.info("Creating LiverSeg with model file: %s.",
+                    str(model))
         LOGGER.info("Creating LiverSeg with data dir: %s.",
                     str(self.data))
         LOGGER.info("Creating LiverSeg with working dir: %s.",
                     str(self.working))
         LOGGER.info("Creating LiverSeg with omit: %s.",
                     str(self.omit))
-        LOGGER.info("Creating LiverSeg with model file: %s.",
-                    str(model))
         LOGGER.info("Creating LiverSeg with learning_rate: %s.",
                     str(self.learning_rate))
         LOGGER.info("Creating LiverSeg with epochs: %s.",
                     str(self.epochs))
+        LOGGER.info("Creating LiverSeg with batch_size: %s.",
+                    str(self.batch_size))
+        LOGGER.info("Creating LiverSeg with input_size size: %s.",
+                    str(self.input_size))
 
         # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
@@ -217,7 +236,7 @@ class LiverSeg:
         train_image_generator = train_image_datagen.flow_from_directory(
             os.path.dirname(self.train_images_working_dir),
             target_size=self.input_size,
-            batch_size=32,
+            batch_size=self.batch_size,
             color_mode='rgb',
             class_mode=None,
             shuffle=True,
@@ -226,19 +245,20 @@ class LiverSeg:
         train_mask_generator = train_mask_datagen.flow_from_directory(
             os.path.dirname(self.train_masks_working_dir),
             target_size=self.input_size,
-            batch_size=32,
+            batch_size=self.batch_size,
             color_mode='grayscale',
             class_mode=None,
             shuffle=True,
             seed=seed)
 
-        self.train_generator = zip(train_image_generator,
-                                   train_mask_generator)
+        self.number_training_samples = len(train_image_generator.filepaths)
+
+        self.train_generator = (pair for pair in zip(train_image_generator, train_mask_generator))
 
         validate_image_generator = validate_image_datagen.flow_from_directory(
             os.path.dirname(self.validate_images_working_dir),
             target_size=self.input_size,
-            batch_size=32,
+            batch_size=self.batch_size,
             color_mode='rgb',
             class_mode=None,
             shuffle=False,
@@ -247,39 +267,69 @@ class LiverSeg:
         validate_mask_generator = validate_mask_datagen.flow_from_directory(
             os.path.dirname(self.validate_masks_working_dir),
             target_size=self.input_size,
-            batch_size=32,
+            batch_size=self.batch_size,
             color_mode='grayscale',
             class_mode=None,
             shuffle=False,
             seed=seed)
 
-        self.validate_generator = zip(validate_image_generator,
-                                      validate_mask_generator)
+        self.number_validation_samples = len(validate_image_generator.filepaths)
+
+        self.train_generator = (pair for pair in zip(validate_image_generator, validate_mask_generator))
 
     def _build_model(self):
         """
         Constructs the neural network, and compiles it.
 
-        Currently, we are using a standard UNet.
-
-        Remember that the Liver cases are pre-cropped and hence may be of
-        different sizes, so they will need resizing as input to network.
+        Currently, we are using a standard UNet on RGB images.
         """
 
         LOGGER.info("Building Model")
 
-        #optimiser = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        inputs = keras.Input(self.input_size)
 
-        #model.fit_generator(
-        #    train_generator,
-        #    steps_per_epoch=2000,
-        #    epochs=50)
+        # Left side of UNet
+        conv1 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
+        conv1 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
+        pool1 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1)
+        conv2 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool1)
+        conv2 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv2)
+        pool2 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2)
+        conv3 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool2)
+        conv3 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv3)
+        pool3 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv3)
+        conv4 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool3)
+        conv4 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv4)
+        pool4 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv4)
 
-        #self.model.compile(optimizer=optimiser,
-        #                   loss='sparse_categorical_crossentropy',
-        #                   metrics=['accuracy'])
+        # Bottom of UNet
+        conv5 = keras.layers.Conv2D(1024, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool4)
+        conv5 = keras.layers.Conv2D(1024, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv5)
 
-        #self.model.summary()
+        # Right side of UNet
+        up6 = keras.layers.Conv2D(512, 2, activation='relu', padding='same', kernel_initializer='he_normal')(keras.layers.UpSampling2D(size=(2, 2))(conv5))
+        merge6 = keras.layers.concatenate([conv4, up6])
+        conv6 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge6)
+        conv6 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv6)
+        up7 = keras.layers.Conv2D(256, 2, activation='relu', padding='same', kernel_initializer='he_normal')(keras.layers.UpSampling2D(size=(2, 2))(conv6))
+        merge7 = keras.layers.concatenate([conv3, up7])
+        conv7 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge7)
+        conv7 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv7)
+        up8 = keras.layers.Conv2D(128, 2, activation='relu', padding='same', kernel_initializer='he_normal')(keras.layers.UpSampling2D(size=(2, 2))(conv7))
+        merge8 = keras.layers.concatenate([conv2, up8])
+        conv8 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge8)
+        conv8 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv8)
+        up9 = keras.layers.Conv2D(64, 2, activation='relu', padding='same', kernel_initializer='he_normal')(keras.layers.UpSampling2D(size=(2, 2))(conv8))
+        merge9 = keras.layers.concatenate([conv1, up9])
+        conv9 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
+        conv9 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
+        conv9 = keras.layers.Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
+        conv10 = keras.layers.Conv2D(1, 1, activation='sigmoid')(conv9)
+
+        self.model = keras.models.Model(inputs=inputs, outputs=conv10)
+        self.model.summary()
+
+        LOGGER.info("Built Model")
 
     def train(self):
         """
@@ -291,23 +341,33 @@ class LiverSeg:
 
         LOGGER.info("Training Model")
 
-        #log_dir = os.path.join(Path(self.logs),
-        #                       datetime.datetime.now()
-        #                       .strftime("%Y%m%d-%H%M%S"))
-        #tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
-        #                                                   histogram_freq=1)
+        optimiser = keras.optimizers.Adam(learning_rate=self.learning_rate)
 
-        #self.model.fit(self.train_images,
-        #               self.train_labels,
-        #               epochs=self.epochs,
-        #               validation_data=(self.test_images, self.test_labels),
-        #               callbacks=[tensorboard_callback]
-        #               )
+        self.model.compile(optimizer=optimiser,
+                           loss='binary_crossentropy',
+                           metrics=['accuracy'])
 
-        #return self.model.evaluate(self.test_images,
-        #                           self.test_labels,
-        #                           verbose=2,
-        #                           )
+        log_dir = os.path.join(Path(self.logs),
+                               datetime.datetime.now()
+                               .strftime("%Y%m%d-%H%M%S"))
+        tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
+                                                           histogram_freq=1)
+
+        self.model.fit_generator(
+            self.train_generator,
+            steps_per_epoch=self.number_training_samples // self.batch_size,
+            epochs=self.epochs,
+            verbose=2,
+            validation_data=self.validate_generator,
+            validation_steps=self.number_validation_samples // self.batch_size,
+            callbacks=[tensorboard_callback]
+        )
+
+        return self.model.evaluate(self.validate_generator,
+                                   batch_size=self.batch_size,
+                                   steps=len(self.validate_generator) // self.batch_size,
+                                   verbose=2
+                                   )
 
     def test(self, image):
         """

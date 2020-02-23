@@ -235,7 +235,7 @@ class LiverSeg:
 
         train_image_generator = train_image_datagen.flow_from_directory(
             os.path.dirname(self.train_images_working_dir),
-            target_size=self.input_size,
+            target_size=(self.input_size[0], self.input_size[1]),
             batch_size=self.batch_size,
             color_mode='rgb',
             class_mode=None,
@@ -244,7 +244,7 @@ class LiverSeg:
 
         train_mask_generator = train_mask_datagen.flow_from_directory(
             os.path.dirname(self.train_masks_working_dir),
-            target_size=self.input_size,
+            target_size=(self.input_size[0], self.input_size[1]),
             batch_size=self.batch_size,
             color_mode='grayscale',
             class_mode=None,
@@ -257,7 +257,7 @@ class LiverSeg:
 
         validate_image_generator = validate_image_datagen.flow_from_directory(
             os.path.dirname(self.validate_images_working_dir),
-            target_size=self.input_size,
+            target_size=(self.input_size[0], self.input_size[1]),
             batch_size=self.batch_size,
             color_mode='rgb',
             class_mode=None,
@@ -266,7 +266,7 @@ class LiverSeg:
 
         validate_mask_generator = validate_mask_datagen.flow_from_directory(
             os.path.dirname(self.validate_masks_working_dir),
-            target_size=self.input_size,
+            target_size=(self.input_size[0], self.input_size[1]),
             batch_size=self.batch_size,
             color_mode='grayscale',
             class_mode=None,

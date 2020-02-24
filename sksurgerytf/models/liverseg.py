@@ -3,6 +3,9 @@
 """
 Module to implement a semantic (pixelwise) segmentation of images of the liver.
 """
+
+#pylint: disable=line-too-long, too-many-instance-attributes
+
 import os
 import sys
 import glob
@@ -15,9 +18,6 @@ import shutil
 from pathlib import Path
 import numpy as np
 from tensorflow import keras
-from tensorflow.keras.models import *
-from tensorflow.keras.layers import *
-from tensorflow.keras.optimizers import *
 import cv2
 from sksurgerytf import __version__
 
@@ -50,22 +50,22 @@ class LiverSeg:
         Class to implement a CNN to extract a binary mask
         of the liver from RGB video.
 
-        If the constructor is called without weights, the data is loaded
-        and a full training cycle is performed in order to learn the weights.
+        If the constructor is called without a previously saved model,
+        the data is loaded and a full training cycle is performed.
 
-        If the constructor is called with weights, these weights are loaded,
-        as is, with no further training. If you want to continue training, call
-        the train method again.
+        If the constructor is called with a previously saved model,
+        the model is loaded as is, with no further training. You can then
+        call the test method to predict the output on new images.
 
         :param logs: relative path to folder to write tensorboard log files.
         :param data: root directory of training data.
         :param working: working directory for organising data.
         :param omit: patient identifier to omit, when doing Leave-One-Out.
         :param model: file name of previously saved model.
-        :param learning_rate: float, default=0.001 which is the Keras default.
-        :param epochs: int, default=1,
-        :param batch_size: int, default=32,
-        :param input_size: Expected input size for network.
+        :param learning_rate: float, default=0.001 for Adam optimiser.
+        :param epochs: int, default=3,
+        :param batch_size: int, default=4,
+        :param input_size: Expected input size for network, default (512,512,3).
         """
         self.logs = logs
         self.data = data
@@ -376,6 +376,8 @@ class LiverSeg:
         :param image: (1920 x 540), numpy, 3 channel RGB, [0-255], uchar.
         :return: (1920 x 540) numpy, single channel, [0=background|255=liver].
         """
+        print(image) # avoid lint error for now.
+        print(self.batch_size) # avoid lint error for now.
         return np.zeros((540, 1920))
 
     def save_model(self, filename):
@@ -421,12 +423,12 @@ def run_liverseg_model(logs,
     LOGGER.info("Starting liverseg.py with cwd: %s.", os.getcwd())
     LOGGER.info("Starting liverseg.py with path: %s.", sys.path)
 
-    ls = LiverSeg(logs, data, working, omit, model)
+    liver_seg = LiverSeg(logs, data, working, omit, model)
 
     if save is not None:
-        ls.save_model(save)
+        liver_seg.save_model(save)
 
     if test is not None:
         img = cv2.imread(test)
-        mask = ls.test(img)
+        mask = liver_seg.test(img)
         cv2.imwrite(test + ".mask.png", mask)

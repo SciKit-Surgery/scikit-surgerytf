@@ -43,7 +43,7 @@ class LiverSeg:
                  model=None,
                  learning_rate=0.001,
                  epochs=3,
-                 batch_size=32,
+                 batch_size=4,
                  input_size=(512, 512, 3)
                  ):
         """
@@ -357,7 +357,7 @@ class LiverSeg:
             self.train_generator,
             steps_per_epoch=self.number_training_samples // self.batch_size,
             epochs=self.epochs,
-            verbose=2,
+            verbose=1,
             validation_data=self.validate_generator,
             validation_steps=self.number_validation_samples // self.batch_size,
             callbacks=[tensorboard_callback]
@@ -365,7 +365,7 @@ class LiverSeg:
 
         return self.model.evaluate(self.validate_generator,
                                    batch_size=self.batch_size,
-                                   steps=len(self.validate_generator) // self.batch_size,
+                                   steps=self.number_validation_samples // self.batch_size,
                                    verbose=2
                                    )
 

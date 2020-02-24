@@ -52,6 +52,24 @@ def main(args=None):
                         type=str,
                         help="Test image (1920 x 540), RGB.")
 
+    parser.add_argument("-e", "--epochs",
+                        required=False,
+                        type=int,
+                        default=1,
+                        help="Number of epochs")
+
+    parser.add_argument("-b", "--batchsize",
+                        required=False,
+                        type=int,
+                        default=4,
+                        help="Batch size")
+
+    parser.add_argument("-r", "--learningrate",
+                        required=False,
+                        type=float,
+                        default=0.001,
+                        help="Learning rate for optimizer (Adam).")
+
     version_string = __version__
     friendly_version_string = version_string if version_string else 'unknown'
     parser.add_argument(
@@ -67,5 +85,8 @@ def main(args=None):
                           args.omit,
                           args.model,
                           args.save,
-                          args.test
+                          args.test,
+                          args.epochs,
+                          args.batchsize,
+                          args.learningrate
                           )

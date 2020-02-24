@@ -12,7 +12,6 @@ import glob
 import logging
 import datetime
 import platform
-import random
 import ssl
 import shutil
 from pathlib import Path
@@ -128,18 +127,11 @@ class LiverSeg:
         Copies data from data directory to working directory.
 
         If the user is doing 'Leave-On-Out' then we validate on that case.
-        If the user hasn't specified a L-O-O, we pick one at random.
         """
         # Look for each case in a sub-directory.
         sub_dirs = [f.path for f in os.scandir(self.data) if f.is_dir()]
         if not sub_dirs:
             raise ValueError("Couldn't find sub directories")
-
-        # If the user hasn't specified a L-O-O, we pick one at random.
-        if self.omit is None:
-            self.omit = os.path.basename(
-                sub_dirs[random.randint(0, len(sub_dirs))])
-            LOGGER.info("Chose random validation set:%s", self.omit)
 
         # Always recreate working directory to avoid data leak.
         if os.path.exists(self.working):
@@ -255,27 +247,28 @@ class LiverSeg:
 
         self.train_generator = (pair for pair in zip(train_image_generator, train_mask_generator))
 
-        validate_image_generator = validate_image_datagen.flow_from_directory(
-            os.path.dirname(self.validate_images_working_dir),
-            target_size=(self.input_size[0], self.input_size[1]),
-            batch_size=self.batch_size,
-            color_mode='rgb',
-            class_mode=None,
-            shuffle=False,
-            seed=seed)
+        if self.omit is not None:
+            validate_image_generator = validate_image_datagen.flow_from_directory(
+                os.path.dirname(self.validate_images_working_dir),
+                target_size=(self.input_size[0], self.input_size[1]),
+                batch_size=self.batch_size,
+                color_mode='rgb',
+                class_mode=None,
+                shuffle=False,
+                seed=seed)
 
-        validate_mask_generator = validate_mask_datagen.flow_from_directory(
-            os.path.dirname(self.validate_masks_working_dir),
-            target_size=(self.input_size[0], self.input_size[1]),
-            batch_size=self.batch_size,
-            color_mode='grayscale',
-            class_mode=None,
-            shuffle=False,
-            seed=seed)
+            validate_mask_generator = validate_mask_datagen.flow_from_directory(
+                os.path.dirname(self.validate_masks_working_dir),
+                target_size=(self.input_size[0], self.input_size[1]),
+                batch_size=self.batch_size,
+                color_mode='grayscale',
+                class_mode=None,
+                shuffle=False,
+                seed=seed)
 
-        self.number_validation_samples = len(validate_image_generator.filepaths)
+            self.number_validation_samples = len(validate_image_generator.filepaths)
 
-        self.train_generator = (pair for pair in zip(validate_image_generator, validate_mask_generator))
+            self.validate_generator = (pair for pair in zip(validate_image_generator, validate_mask_generator))
 
     def _build_model(self):
         """
@@ -336,7 +329,7 @@ class LiverSeg:
         Method to train the neural network. Writes each epoch
         to tensorboard log files.
 
-        :return: output of self.model.evaluate on test set.
+        :return: output of self.model.evaluate on validation set, or None.
         """
 
         LOGGER.info("Training Model")
@@ -353,21 +346,28 @@ class LiverSeg:
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
                                                            histogram_freq=1)
 
+        validation_steps = None
+        if self.number_validation_samples is not None:
+            validation_steps = self.number_validation_samples // self.batch_size
+
         self.model.fit_generator(
             self.train_generator,
             steps_per_epoch=self.number_training_samples // self.batch_size,
             epochs=self.epochs,
             verbose=1,
             validation_data=self.validate_generator,
-            validation_steps=self.number_validation_samples // self.batch_size,
+            validation_steps=validation_steps,
             callbacks=[tensorboard_callback]
         )
 
-        return self.model.evaluate(self.validate_generator,
-                                   batch_size=self.batch_size,
-                                   steps=self.number_validation_samples // self.batch_size,
-                                   verbose=2
-                                   )
+        result = None
+        if self.validate_generator is not None and self.number_validation_samples is not None:
+            result = self.model.evaluate(self.validate_generator,
+                                         batch_size=self.batch_size,
+                                         steps=self.number_validation_samples // self.batch_size,
+                                         verbose=2
+                                         )
+        return result
 
     def test(self, image):
         """
@@ -395,7 +395,11 @@ def run_liverseg_model(logs,
                        omit,
                        model,
                        save,
-                       test):
+                       test,
+                       epochs,
+                       batch_size,
+                       learning_rate
+                       ):
     """
     Helper function to run the LiverSeg model from
     the command line entry point.
@@ -407,6 +411,9 @@ def run_liverseg_model(logs,
     :param model: file of previously saved model.
     :param save: file to save model to.
     :param test: image to test.
+    :param epochs: number of epochs.
+    :param batch_size: batch size.
+    :param learning_rate: learning rate for optimizer.
     """
     # pylint: disable=line-too-long
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -423,7 +430,10 @@ def run_liverseg_model(logs,
     LOGGER.info("Starting liverseg.py with cwd: %s.", os.getcwd())
     LOGGER.info("Starting liverseg.py with path: %s.", sys.path)
 
-    liver_seg = LiverSeg(logs, data, working, omit, model)
+    liver_seg = LiverSeg(logs, data, working, omit, model,
+                         learning_rate=learning_rate,
+                         epochs=epochs,
+                         batch_size=batch_size)
 
     if save is not None:
         liver_seg.save_model(save)

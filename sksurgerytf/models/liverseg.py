@@ -136,10 +136,16 @@ class LiverSeg:
             raise ValueError("Couldn't find sub directories")
         sub_dirs.sort()
 
-        if self.omit is not None and self.omit not in sub_dirs:
-            raise ValueError("User requested to omit:" +
-                             self.omit + ", but it cannot be found in:" +
-                             self.data)
+        if self.omit is not None:
+            found_it = False
+            for dir in sub_dirs:
+                if os.path.basename(dir) == self.omit:
+                    found_it = True
+                    break
+            if not found_it:
+                raise ValueError("User requested to omit:" +
+                                 self.omit + ", but it cannot be found in:" +
+                                 self.data)
 
         # Always recreate working directory to avoid data leak.
         if os.path.exists(self.working):

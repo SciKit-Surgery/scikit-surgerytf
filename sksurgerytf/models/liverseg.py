@@ -4,7 +4,7 @@
 Module to implement a semantic (pixelwise) segmentation of images of the liver.
 """
 
-#pylint: disable=line-too-long, too-many-instance-attributes
+#pylint: disable=line-too-long, too-many-instance-attributes, unsubscriptable-object
 
 import os
 import sys
@@ -16,9 +16,9 @@ import ssl
 import shutil
 from pathlib import Path
 import numpy as np
+import cv2
 from tensorflow import keras
 from PIL import Image
-import cv2
 from sksurgerytf import __version__
 
 LOGGER = logging.getLogger(__name__)
@@ -29,11 +29,12 @@ class LiverSeg:
     Class to encapsulate LiverSeg semantic (pixelwise) segmentation network.
 
     Thanks to
-    `Harshall Lamba <https://towardsdatascience.com/understanding-semantic-segmentation-with-unet-6be4f42d4b47>_,
-    `Zhixuhao <https://github.com/zhixuhao/unet/blob/master/model.py>`_
+    `Zhixuhao <https://github.com/zhixuhao/unet/blob/master/model.py>`_,
     and
     `ShawDa <https://github.com/ShawDa/unet-rgb/blob/master/unet.py>`_
-    for inspiration.
+    for getting me started, and
+    `Harshall Lamba <https://towardsdatascience.com/understanding-semantic-segmentation-with-unet-6be4f42d4b47>_,
+    for further inspiration.
     """
     def __init__(self,
                  logs="logs/fit",
@@ -134,6 +135,11 @@ class LiverSeg:
         if not sub_dirs:
             raise ValueError("Couldn't find sub directories")
         sub_dirs.sort()
+
+        if self.omit is not None and self.omit not in sub_dirs:
+            raise ValueError("User requested to omit:" +
+                             self.omit + ", but it cannot be found in:" +
+                             self.data)
 
         # Always recreate working directory to avoid data leak.
         if os.path.exists(self.working):
@@ -350,7 +356,7 @@ class LiverSeg:
                                                            histogram_freq=1)
 
         filepath = os.path.join(Path(self.logs),
-            "weights-improvement-{epoch:02d}-{val_accuracy:.2f}.hdf5")
+                                "weights-improvement-{epoch:02d}-{val_accuracy:.2f}.hdf5")
 
         checkpoint = keras.callbacks.ModelCheckpoint(filepath,
                                                      monitor='val_accuracy',
@@ -489,5 +495,5 @@ def run_liverseg_model(logs,
         # Using PIL, as internally, Keras/TF seems to use PIL,
         # so we are less likely to get RGB/BGR issues.
         img = Image.open(test)
-        mask = liver_seg.test(img)
+        mask = liver_seg.test_pil(img)
         mask.save(test + ".mask.png")

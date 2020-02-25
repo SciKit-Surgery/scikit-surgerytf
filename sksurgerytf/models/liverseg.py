@@ -394,8 +394,7 @@ class LiverSeg:
         result = None
         if self.validate_generator is not None and self.number_validation_samples is not None:
             result = self.model.evaluate(self.validate_generator,
-                                         batch_size=self.batch_size,
-                                         steps=self.number_validation_samples // self.batch_size,
+                                         steps=self.number_validation_samples,
                                          verbose=2
                                          )
         return result

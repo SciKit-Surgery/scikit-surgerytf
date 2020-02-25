@@ -133,6 +133,7 @@ class LiverSeg:
         sub_dirs = [f.path for f in os.scandir(self.data) if f.is_dir()]
         if not sub_dirs:
             raise ValueError("Couldn't find sub directories")
+        sub_dirs.sort()
 
         # Always recreate working directory to avoid data leak.
         if os.path.exists(self.working):

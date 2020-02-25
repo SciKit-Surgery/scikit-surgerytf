@@ -358,7 +358,18 @@ class LiverSeg:
                                                      save_best_only=True,
                                                      mode='max')
 
-        callbacks_list = [tensorboard_callback, checkpoint]
+        early_stopping_term = "acc"
+        if self.number_validation_samples is not None:
+            early_stopping_term = "val_accuracy"
+
+        early_stopping = keras.callbacks.EarlyStopping(monitor=early_stopping_term,
+                                                       verbose=1,
+                                                       min_delta=0.01,
+                                                       patience=0,
+                                                       restore_best_weights=True
+                                                       )
+
+        callbacks_list = [tensorboard_callback, checkpoint, early_stopping]
 
         validation_steps = None
         if self.number_validation_samples is not None:

@@ -376,8 +376,8 @@ class LiverSeg:
 
         early_stopping = keras.callbacks.EarlyStopping(monitor=early_stopping_term,
                                                        verbose=1,
-                                                       min_delta=0.01,
-                                                       patience=0,
+                                                       min_delta=0.0001,
+                                                       patience=3,
                                                        restore_best_weights=True
                                                        )
 

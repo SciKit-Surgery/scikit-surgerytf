@@ -17,6 +17,7 @@ import shutil
 from pathlib import Path
 import numpy as np
 from tensorflow import keras
+from PIL import Image
 import cv2
 from sksurgerytf import __version__
 
@@ -40,7 +41,7 @@ class LiverSeg:
                  working=None,
                  omit=None,
                  model=None,
-                 learning_rate=0.001,
+                 learning_rate=0.0001,
                  epochs=3,
                  batch_size=4,
                  input_size=(512, 512, 3)
@@ -343,8 +344,20 @@ class LiverSeg:
         log_dir = os.path.join(Path(self.logs),
                                datetime.datetime.now()
                                .strftime("%Y%m%d-%H%M%S"))
+
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
                                                            histogram_freq=1)
+
+        filepath = os.path.join(Path(self.logs),
+            "weights-improvement-{epoch:02d}-{val_accuracy:.2f}.hdf5")
+
+        checkpoint = keras.callbacks.ModelCheckpoint(filepath,
+                                                     monitor='val_accuracy',
+                                                     verbose=1,
+                                                     save_best_only=True,
+                                                     mode='max')
+
+        callbacks_list = [tensorboard_callback, checkpoint]
 
         validation_steps = None
         if self.number_validation_samples is not None:
@@ -357,7 +370,7 @@ class LiverSeg:
             verbose=1,
             validation_data=self.validate_generator,
             validation_steps=validation_steps,
-            callbacks=[tensorboard_callback]
+            callbacks=callbacks_list
         )
 
         result = None
@@ -369,16 +382,38 @@ class LiverSeg:
                                          )
         return result
 
-    def test(self, image):
+    def test_pil(self, image):
         """
-        Method to test a single (1920 x 540) image.
+        Method to test a single image. Image resized to match network,
+        segmented and then resized back to match the input size.
 
-        :param image: (1920 x 540), numpy, 3 channel RGB, [0-255], uchar.
-        :return: (1920 x 540) numpy, single channel, [0=background|255=liver].
+        :param image: (1920 x 540), PIL image, 3 channel RGB, [0-255], uchar.
+        :return: (1920 x 540) PIL image, single channel, [0=bg|255=liver].
         """
-        print(image) # avoid lint error for now.
-        print(self.batch_size) # avoid lint error for now.
-        return np.zeros((540, 1920))
+        img = np.array(image)
+        img = img * 1./255
+        resized = cv2.resize(img, self.input_size[1], self.input_size[0])
+        predictions = self.model.predict(resized)
+        mask = predictions[0]
+        mask = cv2.resize(mask, img.shape[1], img.shape[0])
+        result = Image.fromarray(mask)
+        return result
+
+    def test_opencv(self, image):
+        """
+        Method to test a single image. Image resized to match network,
+        segmented and then resized back to match the input size.
+
+        :param image: (1920 x 540), OpenCV image, 3 channel RGB, [0-255], uchar.
+        :return: (1920 x 540) OpenCV image, single channel, [0=bg|255=liver].
+        """
+        img = image * 1. / 255
+        resized = cv2.resize(img, self.input_size[1], self.input_size[0])
+        resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
+        predictions = self.model.predict(resized)
+        mask = predictions[0]
+        mask = cv2.resize(mask, img.shape[1], img.shape[0])
+        return mask
 
     def save_model(self, filename):
         """
@@ -439,6 +474,8 @@ def run_liverseg_model(logs,
         liver_seg.save_model(save)
 
     if test is not None:
-        img = cv2.imread(test)
+        # Using PIL, as internally, Keras/TF seems to use PIL,
+        # so we are less likely to get RGB/BGR issues.
+        img = Image.open(test)
         mask = liver_seg.test(img)
-        cv2.imwrite(test + ".mask.png", mask)
+        mask.save(test + ".mask.png")

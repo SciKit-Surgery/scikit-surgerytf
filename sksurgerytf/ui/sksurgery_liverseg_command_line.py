@@ -55,7 +55,7 @@ def main(args=None):
     parser.add_argument("-e", "--epochs",
                         required=False,
                         type=int,
-                        default=1,
+                        default=10,
                         help="Number of epochs")
 
     parser.add_argument("-b", "--batchsize",
@@ -67,7 +67,7 @@ def main(args=None):
     parser.add_argument("-r", "--learningrate",
                         required=False,
                         type=float,
-                        default=0.001,
+                        default=0.0001,
                         help="Learning rate for optimizer (Adam).")
 
     version_string = __version__

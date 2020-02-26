@@ -361,8 +361,14 @@ class LiverSeg:
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
                                                            histogram_freq=1)
 
+        checkpoint_file = "checkpoint-"
+        if self.omit:
+            checkpoint_file = checkpoint_file + self.omit
+        else:
+            checkpoint_file = checkpoint_file + "all"
+        checkpoint_file = checkpoint_file + "-{epoch:02d}-{val_accuracy:.3f}.hdf5"
         filepath = os.path.join(Path(self.logs),
-                                "weights-improvement-{epoch:02d}-{val_accuracy:.2f}.hdf5")
+                                checkpoint_file)
 
         checkpoint = keras.callbacks.ModelCheckpoint(filepath,
                                                      monitor='val_accuracy',

@@ -4,7 +4,7 @@
 Module to implement a semantic (pixelwise) segmentation of images of the liver.
 """
 
-#pylint: disable=line-too-long, too-many-instance-attributes, unsubscriptable-object
+#pylint: disable=line-too-long, too-many-instance-attributes, unsubscriptable-object, too-many-branches
 
 import os
 import sys
@@ -138,8 +138,8 @@ class LiverSeg:
 
         if self.omit is not None:
             found_it = False
-            for dir in sub_dirs:
-                if os.path.basename(dir) == self.omit:
+            for directory in sub_dirs:
+                if os.path.basename(directory) == self.omit:
                     found_it = True
                     break
             if not found_it:
@@ -405,37 +405,21 @@ class LiverSeg:
                                          )
         return result
 
-    def test_pil(self, image):
+    def predict(self, rgb_image):
         """
         Method to test a single image. Image resized to match network,
         segmented and then resized back to match the input size.
 
-        :param image: (1920 x 540), PIL image, 3 channel RGB, [0-255], uchar.
-        :return: (1920 x 540) PIL image, single channel, [0=bg|255=liver].
+        :param rgb_image: 3 channel RGB, [0-255], uchar.
+        :return: single channel, [0=bg|255=liver].
         """
-        img = np.array(image)
-        img = img * 1./255
-        resized = cv2.resize(img, self.input_size[1], self.input_size[0])
+        img = rgb_image * 1. / 255
+        resized = cv2.resize(img, (self.input_size[1], self.input_size[0]))
+        resized = np.expand_dims(resized, axis=0)
         predictions = self.model.predict(resized)
-        mask = predictions[0]
-        mask = cv2.resize(mask, img.shape[1], img.shape[0])
-        result = Image.fromarray(mask)
-        return result
-
-    def test_opencv(self, image):
-        """
-        Method to test a single image. Image resized to match network,
-        segmented and then resized back to match the input size.
-
-        :param image: (1920 x 540), OpenCV image, 3 channel RGB, [0-255], uchar.
-        :return: (1920 x 540) OpenCV image, single channel, [0=bg|255=liver].
-        """
-        img = image * 1. / 255
-        resized = cv2.resize(img, self.input_size[1], self.input_size[0])
-        resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-        predictions = self.model.predict(resized)
-        mask = predictions[0]
-        mask = cv2.resize(mask, img.shape[1], img.shape[0])
+        mask = predictions[0]                  # float 0-1
+        mask = (mask > 0.5).astype(np.ubyte) * 255  # threshold, cast to uchar, rescale [0|255]
+        mask = cv2.resize(mask, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
         return mask
 
     def save_model(self, filename):
@@ -454,6 +438,7 @@ def run_liverseg_model(logs,
                        model,
                        save,
                        test,
+                       prediction,
                        epochs,
                        batch_size,
                        learning_rate
@@ -468,7 +453,8 @@ def run_liverseg_model(logs,
     :param omit: patient identifier to omit, when doing Leave-One-Out.
     :param model: file of previously saved model.
     :param save: file to save model to.
-    :param test: image to test.
+    :param test: input image to test.
+    :param prediction: output image, the result of the prediction on test image.
     :param epochs: number of epochs.
     :param batch_size: batch size.
     :param learning_rate: learning rate for optimizer.
@@ -488,6 +474,12 @@ def run_liverseg_model(logs,
     LOGGER.info("Starting liverseg.py with cwd: %s.", os.getcwd())
     LOGGER.info("Starting liverseg.py with path: %s.", sys.path)
 
+    # No point loading network to test an image, if command line args wrong.
+    # So, check this up front.
+    if test is not None:
+        if prediction is None:
+            raise ValueError("If you specify a test image, you must specify a filename for the output prediction.")
+
     liver_seg = LiverSeg(logs, data, working, omit, model,
                          learning_rate=learning_rate,
                          epochs=epochs,
@@ -497,8 +489,7 @@ def run_liverseg_model(logs,
         liver_seg.save_model(save)
 
     if test is not None:
-        # Using PIL, as internally, Keras/TF seems to use PIL,
-        # so we are less likely to get RGB/BGR issues.
-        img = Image.open(test)
-        mask = liver_seg.test_pil(img)
-        mask.save(test + ".mask.png")
+        img = cv2.imread(test)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        mask = liver_seg.predict(img)
+        cv2.imwrite(prediction, mask)

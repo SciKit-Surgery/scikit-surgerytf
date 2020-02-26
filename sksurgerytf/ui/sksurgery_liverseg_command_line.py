@@ -50,7 +50,12 @@ def main(args=None):
     parser.add_argument("-t", "--test",
                         required=False,
                         type=str,
-                        help="Test image (1920 x 540), RGB.")
+                        help="Test/predict input image, RGB.")
+
+    parser.add_argument("-p", "--prediction",
+                        required=False,
+                        type=str,
+                        help="Test/predict output image, RGB.")
 
     parser.add_argument("-e", "--epochs",
                         required=False,
@@ -86,6 +91,7 @@ def main(args=None):
                           args.model,
                           args.save,
                           args.test,
+                          args.prediction,
                           args.epochs,
                           args.batchsize,
                           args.learningrate

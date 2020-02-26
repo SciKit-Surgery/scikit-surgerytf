@@ -4,7 +4,7 @@
 Module to implement a semantic (pixelwise) segmentation of images of the liver.
 """
 
-#pylint: disable=line-too-long, too-many-instance-attributes, unsubscriptable-object, too-many-branches
+#pylint: disable=line-too-long, too-many-instance-attributes, unsubscriptable-object, too-many-branches, too-many-arguments
 
 import os
 import sys
@@ -18,7 +18,6 @@ from pathlib import Path
 import numpy as np
 import cv2
 from tensorflow import keras
-from PIL import Image
 from sksurgerytf import __version__
 
 LOGGER = logging.getLogger(__name__)

@@ -40,12 +40,12 @@ def main(args=None):
     parser.add_argument("-m", "--model",
                         required=False,
                         type=str,
-                        help="Load complete pre-trained model (normally .hdf5).")
+                        help="Load pre-trained model (normally .hdf5).")
 
     parser.add_argument("-s", "--save",
                         required=False,
                         type=str,
-                        help="Save model (normally .hdf5).")
+                        help="Save trained model (normally .hdf5).")
 
     parser.add_argument("-t", "--test",
                         required=False,

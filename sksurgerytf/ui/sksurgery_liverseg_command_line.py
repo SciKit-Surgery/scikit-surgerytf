@@ -30,44 +30,44 @@ def main(args=None):
                         required=False,
                         type=str,
                         default="logs/working",
-                        help="Root directory of data to train on.")
+                        help="Root directory to write intermediate output to.")
 
     parser.add_argument("-o", "--omit",
                         required=False,
                         type=str,
-                        help="Directory identifier to omit.")
+                        help="Directory identifier to omit for Leave-One-Out.")
 
     parser.add_argument("-m", "--model",
                         required=False,
                         type=str,
-                        help="Load complete pre-trained model (normally .hd5).")
+                        help="Load complete pre-trained model (normally .hdf5).")
 
     parser.add_argument("-s", "--save",
                         required=False,
                         type=str,
-                        help="Save model (normally .hd5).")
+                        help="Save model (normally .hdf5).")
 
     parser.add_argument("-t", "--test",
                         required=False,
                         type=str,
-                        help="Test/predict input image, RGB.")
+                        help="Test/predict input image, RGB, .png, .jpg")
 
     parser.add_argument("-p", "--prediction",
                         required=False,
                         type=str,
-                        help="Test/predict output image, RGB.")
+                        help="Test/predict output image, RGB, .png, .jpg")
 
     parser.add_argument("-e", "--epochs",
                         required=False,
                         type=int,
-                        default=10,
-                        help="Number of epochs")
+                        default=20,
+                        help="Number of epochs.")
 
     parser.add_argument("-b", "--batchsize",
                         required=False,
                         type=int,
-                        default=4,
-                        help="Batch size")
+                        default=2,
+                        help="Batch size.")
 
     parser.add_argument("-r", "--learningrate",
                         required=False,

@@ -60,7 +60,7 @@ def main(args=None):
     parser.add_argument("-e", "--epochs",
                         required=False,
                         type=int,
-                        default=20,
+                        default=50,
                         help="Number of epochs.")
 
     parser.add_argument("-b", "--batchsize",

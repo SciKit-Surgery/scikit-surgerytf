@@ -219,10 +219,14 @@ class LiverSeg:
         train_data_gen_args = dict(rescale=1./255,
                                    horizontal_flip=True,
                                    vertical_flip=True,
-                                   rotation_range=0,
-                                   width_shift_range=0,
-                                   height_shift_range=0,
-                                   zoom_range=0)
+                                   fill_mode='constant',
+                                   cval=0,
+                                   rotation_range=20,
+                                   width_shift_range=[-200, 200],
+                                   height_shift_range=[-100, 100],
+                                   brightness_range=[0.75, 1.1],
+                                   zoom_range=[0.5, 1.0]
+                                   )
 
         validate_data_gen_args = dict(rescale=1./255)
 

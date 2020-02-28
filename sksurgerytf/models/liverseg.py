@@ -373,13 +373,6 @@ class LiverSeg:
                                                      save_best_only=True,
                                                      mode='max')
 
-        #        early_stopping = keras.callbacks.EarlyStopping(monitor=evaluation_term,
-#                                                       verbose=1,
-#                                                       min_delta=0.0001,
-#                                                       patience=3,
-#                                                       restore_best_weights=True
-#                                                       )
-
         callbacks_list = [tensorboard_callback, checkpoint]
 
         validation_steps = None

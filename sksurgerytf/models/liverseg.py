@@ -366,7 +366,7 @@ class LiverSeg:
 
         evaluation_term = "accuracy"
         if self.number_validation_samples is not None:
-            early_stopping_term = "val_accuracy"
+            evaluation_term = "val_accuracy"
 
         checkpoint_file = "checkpoint-"
         if self.omit:

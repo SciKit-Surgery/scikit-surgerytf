@@ -482,6 +482,16 @@ def run_liverseg_model(logs,
 
     if test is not None:
         img = cv2.imread(test)
+
+        start_time = datetime.datetime.now()
+
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         mask = liver_seg.predict(img)
+
+        end_time = datetime.datetime.now()
+        time_taken = (end_time - start_time).total_seconds()
+
+        LOGGER.info("Prediction on %s took %s seconds.",
+                    test, str(time_taken))
+
         cv2.imwrite(prediction, mask)

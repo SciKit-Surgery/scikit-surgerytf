@@ -405,8 +405,8 @@ class LiverSeg:
             steps_per_epoch=self.number_training_samples // self.batch_size,
             epochs=self.epochs,
             verbose=1,
-            validation_data=self.validate_generator,
-            validation_steps=validation_steps,
+            validation_data=self.validate_generator, # this will be None if you didn't specify self.omit
+            validation_steps=validation_steps,       # and then this won't matter if the above is None.
             callbacks=callbacks_list
         )
 
@@ -430,8 +430,8 @@ class LiverSeg:
         resized = cv2.resize(img, (self.input_size[1], self.input_size[0]))
         resized = np.expand_dims(resized, axis=0)
         predictions = self.model.predict(resized)
-        mask = predictions[0]                  # float 0-1
-        mask = (mask > 0.5).astype(np.ubyte) * 255  # threshold, cast to uchar, rescale [0|255]
+        mask = predictions[0]                       # float 0-1
+        mask = (mask > 0.5).astype(np.ubyte) * 255  # threshold 0.5, cast to uchar, rescale [0|255]
         mask = cv2.resize(mask, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
         return mask
 

@@ -365,8 +365,6 @@ class LiverSeg:
                                                            histogram_freq=1)
 
         evaluation_term = "accuracy"
-        if self.number_validation_samples is not None:
-            evaluation_term = "val_accuracy"
 
         checkpoint_file = "checkpoint-"
         if self.omit:

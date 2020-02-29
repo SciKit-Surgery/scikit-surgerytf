@@ -75,6 +75,12 @@ def main(args=None):
                         default=0.0001,
                         help="Learning rate for optimizer (Adam).")
 
+    parser.add_argument("-pat", "--patience",
+                        required=False,
+                        type=int,
+                        default=5,
+                        help="Patience (early stopping tolerance, #steps.)")
+
     version_string = __version__
     friendly_version_string = version_string if version_string else 'unknown'
     parser.add_argument(
@@ -94,5 +100,6 @@ def main(args=None):
                           args.prediction,
                           args.epochs,
                           args.batchsize,
-                          args.learningrate
+                          args.learningrate,
+                          args.patience
                           )

@@ -44,7 +44,8 @@ class LiverSeg:
                  learning_rate=0.0001,
                  epochs=3,
                  batch_size=4,
-                 input_size=(512, 512, 3)
+                 input_size=(512, 512, 3),
+                 patience=5
                  ):
         """
         Class to implement a CNN to extract a binary mask
@@ -66,6 +67,7 @@ class LiverSeg:
         :param epochs: int, default=3,
         :param batch_size: int, default=4,
         :param input_size: Expected input size for network, default (512,512,3).
+        :param patience: number of steps to tolerate non-improving accuracy
         """
         self.logs = logs
         self.data = data
@@ -75,6 +77,7 @@ class LiverSeg:
         self.epochs = epochs
         self.batch_size = batch_size
         self.input_size = input_size
+        self.patience = patience
 
         self.model = None
         self.train_images_working_dir = None
@@ -104,6 +107,8 @@ class LiverSeg:
                     str(self.batch_size))
         LOGGER.info("Creating LiverSeg with input_size size: %s.",
                     str(self.input_size))
+        LOGGER.info("Creating LiverSeg with patience: %s.",
+                    str(self.patience))
 
         # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
@@ -379,7 +384,7 @@ class LiverSeg:
                                                      mode='max')
 
         early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
-                                                       patience=5,
+                                                       patience=self.patience,
                                                        restore_best_weights=True
                                                        )
 
@@ -443,7 +448,8 @@ def run_liverseg_model(logs,
                        prediction,
                        epochs,
                        batch_size,
-                       learning_rate
+                       learning_rate,
+                       patience
                        ):
     """
     Helper function to run the LiverSeg model from
@@ -460,6 +466,7 @@ def run_liverseg_model(logs,
     :param epochs: number of epochs.
     :param batch_size: batch size.
     :param learning_rate: learning rate for optimizer.
+    :param patience: number of steps to tolerate non-improving accuracy
     """
     # pylint: disable=line-too-long
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -485,7 +492,9 @@ def run_liverseg_model(logs,
     liver_seg = LiverSeg(logs, data, working, omit, model,
                          learning_rate=learning_rate,
                          epochs=epochs,
-                         batch_size=batch_size)
+                         batch_size=batch_size,
+                         patience=patience
+                         )
 
     if save is not None:
         liver_seg.save_model(save)

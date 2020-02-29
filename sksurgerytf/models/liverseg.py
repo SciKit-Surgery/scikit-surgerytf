@@ -364,8 +364,13 @@ class LiverSeg:
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
                                                            histogram_freq=1)
 
+        if self.omit is not None:
+            checkpoint_filename = "checkpoint-" + self.omit + ".hdf5"
+        else:
+            checkpoint_filename = "checkpoint-all.hdf5"
+
         filepath = os.path.join(Path(self.logs),
-                                "checkpoint-{epoch:02d}-{val_accuracy:.2f}.hdf5")
+                                checkpoint_filename)
 
         checkpoint = keras.callbacks.ModelCheckpoint(filepath,
                                                      monitor='val_accuracy',
@@ -373,7 +378,12 @@ class LiverSeg:
                                                      save_best_only=True,
                                                      mode='max')
 
-        callbacks_list = [tensorboard_callback, checkpoint]
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+                                                       patience=5,
+                                                       restore_best_weights=True
+                                                       )
+
+        callbacks_list = [tensorboard_callback, checkpoint, early_stopping]
 
         validation_steps = None
         if self.number_validation_samples is not None:

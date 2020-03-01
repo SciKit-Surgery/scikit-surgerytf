@@ -67,8 +67,8 @@ def calculate_dice(gold_standard, segmentation):
     :param segmentation: segmented / predicted / inferred image.
     :return: dice score
     """
-    m = get_confusion_matrix(gold_standard, segmentation)
-    return 2 * m[1, 1] / (m[1, 1] * 2 + m[1, 0] + m[0, 1])
+    mat = get_confusion_matrix(gold_standard, segmentation)
+    return 2 * mat[1, 1] / (mat[1, 1] * 2 + mat[1, 0] + mat[0, 1])
 
 
 def run_seg_stats(gold_standard, segmentation):
@@ -101,7 +101,8 @@ def run_seg_stats(gold_standard, segmentation):
     for counter in range(number_of_files):
         gold_standard_file = gold_standard_files[counter]
         gold_standard_image = cv2.imread(gold_standard_file)
-        gold_standard_image = cv2.cvtColor(gold_standard_image, cv2.COLOR_BGR2GRAY)
+        gold_standard_image = cv2.cvtColor(gold_standard_image,
+                                           cv2.COLOR_BGR2GRAY)
         segmented_file = segmentation_files[counter]
         segmented_image = cv2.imread(segmented_file)
         segmented_image = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2GRAY)
@@ -113,7 +114,8 @@ def run_seg_stats(gold_standard, segmentation):
             new_row[0][0] = dice
             results = np.vstack([results, new_row])
         else:
-            print("Image " + gold_standard_files[counter] + " is possibly blank")
+            print("Image " + gold_standard_files[counter]
+                  + " is possibly blank")
 
     if results.shape[0] > 1:
         if results.shape[0] != number_of_files:

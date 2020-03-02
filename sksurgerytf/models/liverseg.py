@@ -44,7 +44,8 @@ class LiverSeg:
                  learning_rate=0.0001,
                  epochs=3,
                  batch_size=4,
-                 input_size=(512, 512, 3)
+                 input_size=(512, 512, 3),
+                 patience=5
                  ):
         """
         Class to implement a CNN to extract a binary mask
@@ -66,6 +67,7 @@ class LiverSeg:
         :param epochs: int, default=3,
         :param batch_size: int, default=4,
         :param input_size: Expected input size for network, default (512,512,3).
+        :param patience: number of steps to tolerate non-improving accuracy
         """
         self.logs = logs
         self.data = data
@@ -75,6 +77,7 @@ class LiverSeg:
         self.epochs = epochs
         self.batch_size = batch_size
         self.input_size = input_size
+        self.patience = patience
 
         self.model = None
         self.train_images_working_dir = None
@@ -104,6 +107,8 @@ class LiverSeg:
                     str(self.batch_size))
         LOGGER.info("Creating LiverSeg with input_size size: %s.",
                     str(self.input_size))
+        LOGGER.info("Creating LiverSeg with patience: %s.",
+                    str(self.patience))
 
         # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
@@ -219,10 +224,14 @@ class LiverSeg:
         train_data_gen_args = dict(rescale=1./255,
                                    horizontal_flip=True,
                                    vertical_flip=True,
-                                   rotation_range=0,
-                                   width_shift_range=0,
-                                   height_shift_range=0,
-                                   zoom_range=0)
+                                   fill_mode='constant',
+                                   cval=0,
+                                   rotation_range=20,
+                                   width_shift_range=[-200, 200],
+                                   height_shift_range=[-100, 100],
+                                   brightness_range=[0.75, 1.1],
+                                   zoom_range=[0.5, 1.0]
+                                   )
 
         validate_data_gen_args = dict(rescale=1./255)
 
@@ -360,14 +369,13 @@ class LiverSeg:
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir,
                                                            histogram_freq=1)
 
-        checkpoint_file = "checkpoint-"
-        if self.omit:
-            checkpoint_file = checkpoint_file + self.omit
+        if self.omit is not None:
+            checkpoint_filename = "checkpoint-" + self.omit + ".hdf5"
         else:
-            checkpoint_file = checkpoint_file + "all"
-        checkpoint_file = checkpoint_file + "-{epoch:02d}-{val_accuracy:.3f}.hdf5"
+            checkpoint_filename = "checkpoint-all.hdf5"
+
         filepath = os.path.join(Path(self.logs),
-                                checkpoint_file)
+                                checkpoint_filename)
 
         checkpoint = keras.callbacks.ModelCheckpoint(filepath,
                                                      monitor='val_accuracy',
@@ -375,14 +383,8 @@ class LiverSeg:
                                                      save_best_only=True,
                                                      mode='max')
 
-        early_stopping_term = "acc"
-        if self.number_validation_samples is not None:
-            early_stopping_term = "val_accuracy"
-
-        early_stopping = keras.callbacks.EarlyStopping(monitor=early_stopping_term,
-                                                       verbose=1,
-                                                       min_delta=0.0001,
-                                                       patience=3,
+        early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+                                                       patience=self.patience,
                                                        restore_best_weights=True
                                                        )
 
@@ -397,8 +399,8 @@ class LiverSeg:
             steps_per_epoch=self.number_training_samples // self.batch_size,
             epochs=self.epochs,
             verbose=1,
-            validation_data=self.validate_generator,
-            validation_steps=validation_steps,
+            validation_data=self.validate_generator, # this will be None if you didn't specify self.omit
+            validation_steps=validation_steps,       # and then this won't matter if the above is None.
             callbacks=callbacks_list
         )
 
@@ -422,8 +424,8 @@ class LiverSeg:
         resized = cv2.resize(img, (self.input_size[1], self.input_size[0]))
         resized = np.expand_dims(resized, axis=0)
         predictions = self.model.predict(resized)
-        mask = predictions[0]                  # float 0-1
-        mask = (mask > 0.5).astype(np.ubyte) * 255  # threshold, cast to uchar, rescale [0|255]
+        mask = predictions[0]                       # float 0-1
+        mask = (mask > 0.5).astype(np.ubyte) * 255  # threshold 0.5, cast to uchar, rescale [0|255]
         mask = cv2.resize(mask, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
         return mask
 
@@ -446,7 +448,8 @@ def run_liverseg_model(logs,
                        prediction,
                        epochs,
                        batch_size,
-                       learning_rate
+                       learning_rate,
+                       patience
                        ):
     """
     Helper function to run the LiverSeg model from
@@ -463,6 +466,7 @@ def run_liverseg_model(logs,
     :param epochs: number of epochs.
     :param batch_size: batch size.
     :param learning_rate: learning rate for optimizer.
+    :param patience: number of steps to tolerate non-improving accuracy
     """
     # pylint: disable=line-too-long
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -488,13 +492,25 @@ def run_liverseg_model(logs,
     liver_seg = LiverSeg(logs, data, working, omit, model,
                          learning_rate=learning_rate,
                          epochs=epochs,
-                         batch_size=batch_size)
+                         batch_size=batch_size,
+                         patience=patience
+                         )
 
     if save is not None:
         liver_seg.save_model(save)
 
     if test is not None:
         img = cv2.imread(test)
+
+        start_time = datetime.datetime.now()
+
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         mask = liver_seg.predict(img)
+
+        end_time = datetime.datetime.now()
+        time_taken = (end_time - start_time).total_seconds()
+
+        LOGGER.info("Prediction on %s took %s seconds.",
+                    test, str(time_taken))
+
         cv2.imwrite(prediction, mask)

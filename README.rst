@@ -61,7 +61,7 @@ Networks
 --------
 
 * sksurgeryfashion.py: The usual FashionMNIST example, for learning purposes.
-* sksurgeryliverseg.py: Developed for liver segmentation, but its an RGB, vanilla UNet.
+* sksurgeryrgbunet.py: RGB `UNet <https://doi.org/10.1007/978-3-319-24574-4_28>`_ example.
 
 Usage
 -----
@@ -90,17 +90,17 @@ Then you get the code, and use tox to install all other dependencies::
 Then you can activate the tox created virtualenv and run top-level entry points directly from the root folder::
 
     source .tox/py36/bin/activate
-    python sksurgeryliverseg.py --help
+    python sksurgeryrgbunet.py --help
 
 
 Windows users would run::
 
     .tox\py36\Scripts\activate
-    python sksurgeryliverseg.py --help
+    python sksurgeryrgbunet.py --help
 
-So, for example, to run the liverseg.py program and train on some data, you would do::
+So, for example, to run the sksurgeryrgbunet.py program and train on some data, you would do::
 
-    python sksurgeryliverseg.py -d DATA -w working_dir -s output.hdf5
+    python sksurgeryrgbunet.py -d DATA -w working_dir -s output.hdf5
 
 where DATA is a directory like::
 
@@ -112,6 +112,9 @@ where DATA is a directory like::
     .
     DATA/PN/masks
     DATA/PN/images
+
+and P1,P2..PN just represents some patient identifier. Images and masks, though in different
+folders, must have the same name.
 
 Developing
 ----------

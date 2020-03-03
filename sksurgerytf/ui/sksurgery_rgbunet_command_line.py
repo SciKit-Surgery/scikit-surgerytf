@@ -1,15 +1,15 @@
 # coding=utf-8
 
-""" Command line entry point for sksurgeryliverseg script. """
+""" Command line entry point for 2D RGB Unet script. """
 
 import argparse
 from sksurgerytf import __version__
-import sksurgerytf.models.liverseg as ls
+import sksurgerytf.models.rgb_unet as unet
 
 
 def main(args=None):
     """
-    Entry point for sksurgeryliverseg demo.
+    Entry point for sksurgeryrgbunet script.
 
     Keep as little code as possible in this file, as it's hard to unit test.
     """
@@ -86,20 +86,20 @@ def main(args=None):
     parser.add_argument(
         "--version",
         action='version',
-        version='sksurgeryliverseg version ' + friendly_version_string)
+        version='sksurgeryrgbunet version ' + friendly_version_string)
 
     args = parser.parse_args(args)
 
-    ls.run_liverseg_model(args.logs,
-                          args.data,
-                          args.working,
-                          args.omit,
-                          args.model,
-                          args.save,
-                          args.test,
-                          args.prediction,
-                          args.epochs,
-                          args.batchsize,
-                          args.learningrate,
-                          args.patience
-                          )
+    unet.run_rgb_unet_model(args.logs,
+                            args.data,
+                            args.working,
+                            args.omit,
+                            args.model,
+                            args.save,
+                            args.test,
+                            args.prediction,
+                            args.epochs,
+                            args.batchsize,
+                            args.learningrate,
+                            args.patience
+                            )

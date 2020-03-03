@@ -57,6 +57,62 @@ Optional features could include:
 * Small test projects that train quickly to completion won't need checkpointing, but large ones will.
 
 
+Networks
+--------
+
+* sksurgeryfashion.py: The usual FashionMNIST example, for learning purposes.
+* sksurgeryliverseg.py: Developed for liver segmentation, but its an RGB, vanilla UNet.
+
+Usage
+-----
+
+Typical instructions for use:
+
+First create a clean python environment, just installing tox::
+
+    # Create a clean conda environment
+    conda create -n myenv python=3.6
+    conda activate myenv
+    pip install tox
+
+
+Then you get the code, and use tox to install all other dependencies::
+
+    git clone https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
+    cd scikit-surgerytf
+    # edit requirements.txt, changing tensorflow to tensorflow-gpu.
+    # The default is the CPU version just for cross platform testing,
+    # but for real use, you should swap it to GPU.
+    # Then run tox to install all dependencies.
+    tox
+
+
+Then you can activate the tox created virtualenv and run top-level entry points directly from the root folder::
+
+    source .tox/py36/bin/activate
+    python sksurgeryliverseg.py --help
+
+
+Windows users would run::
+
+    .tox\py36\Scripts\activate
+    python sksurgeryliverseg.py --help
+
+So, for example, to run the liverseg.py program and train on some data, you would do::
+
+    python sksurgeryliverseg.py -d DATA -w working_dir -s output.hdf5
+
+where DATA is a directory like::
+
+    DATA/P1/masks
+    DATA/P1/images
+    DATA/P2/masks
+    DATA/P2/images
+    .
+    .
+    DATA/PN/masks
+    DATA/PN/images
+
 Developing
 ----------
 

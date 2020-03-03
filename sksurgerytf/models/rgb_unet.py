@@ -14,6 +14,7 @@ import datetime
 import platform
 import ssl
 import shutil
+import getpass
 from pathlib import Path
 import numpy as np
 import cv2
@@ -23,9 +24,9 @@ from sksurgerytf import __version__
 LOGGER = logging.getLogger(__name__)
 
 
-class RGBUnet:
+class RGBUNet:
     """
-    Class to encapsulate RGBUnet semantic (pixelwise) segmentation network.
+    Class to encapsulate RGB UNet semantic (pixelwise) segmentation network.
 
     Thanks to
     `Zhixuhao <https://github.com/zhixuhao/unet/blob/master/model.py>`_,
@@ -48,8 +49,7 @@ class RGBUnet:
                  patience=5
                  ):
         """
-        Class to implement a CNN to extract a binary mask
-        of the liver from RGB video.
+        Class to run UNet on RGB images.
 
         If the constructor is called without a previously saved model,
         the data is loaded and a full training cycle is performed.
@@ -69,6 +69,27 @@ class RGBUnet:
         :param input_size: Expected input size for network, default (512,512,3).
         :param patience: number of steps to tolerate non-improving accuracy
         """
+        LOGGER.info("Creating RGBUNet with log dir: %s.",
+                    str(logs))
+        LOGGER.info("Creating RGBUNet with data dir: %s.",
+                    str(data))
+        LOGGER.info("Creating RGBUNet with working dir: %s.",
+                    str(working))
+        LOGGER.info("Creating RGBUNet with omit: %s.",
+                    str(omit))
+        LOGGER.info("Creating RGBUNet with model file: %s.",
+                    str(model))
+        LOGGER.info("Creating RGBUNet with learning_rate: %s.",
+                    str(learning_rate))
+        LOGGER.info("Creating RGBUNet with epochs: %s.",
+                    str(epochs))
+        LOGGER.info("Creating RGBUNet with batch_size: %s.",
+                    str(batch_size))
+        LOGGER.info("Creating RGBUNet with input_size size: %s.",
+                    str(input_size))
+        LOGGER.info("Creating RGBUNet with patience: %s.",
+                    str(patience))
+
         self.logs = logs
         self.data = data
         self.working = working
@@ -88,27 +109,6 @@ class RGBUnet:
         self.validate_masks_working_dir = None
         self.validate_generator = None
         self.number_validation_samples = None
-
-        LOGGER.info("Creating LiverSeg with log dir: %s.",
-                    str(self.logs))
-        LOGGER.info("Creating LiverSeg with model file: %s.",
-                    str(model))
-        LOGGER.info("Creating LiverSeg with data dir: %s.",
-                    str(self.data))
-        LOGGER.info("Creating LiverSeg with working dir: %s.",
-                    str(self.working))
-        LOGGER.info("Creating LiverSeg with omit: %s.",
-                    str(self.omit))
-        LOGGER.info("Creating LiverSeg with learning_rate: %s.",
-                    str(self.learning_rate))
-        LOGGER.info("Creating LiverSeg with epochs: %s.",
-                    str(self.epochs))
-        LOGGER.info("Creating LiverSeg with batch_size: %s.",
-                    str(self.batch_size))
-        LOGGER.info("Creating LiverSeg with input_size size: %s.",
-                    str(self.input_size))
-        LOGGER.info("Creating LiverSeg with patience: %s.",
-                    str(self.patience))
 
         # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
@@ -157,7 +157,7 @@ class RGBUnet:
             shutil.rmtree(self.working)
 
         # Keras still requires a sub-dir for the class name.
-        class_name = 'liver'
+        class_name = 'object'
 
         self.train_images_working_dir = os.path.join(self.working,
                                                      'train',
@@ -418,7 +418,7 @@ class RGBUnet:
         segmented and then resized back to match the input size.
 
         :param rgb_image: 3 channel RGB, [0-255], uchar.
-        :return: single channel, [0=bg|255=liver].
+        :return: single channel, [0=bg|255=fg].
         """
         img = rgb_image * 1. / 255
         resized = cv2.resize(img, (self.input_size[1], self.input_size[0]))
@@ -452,7 +452,7 @@ def run_rgb_unet_model(logs,
                        patience
                        ):
     """
-    Helper function to run the LiverSeg model from
+    Helper function to run the RGBUnet model from
     the command line entry point.
 
     :param logs: directory for log files for tensorboard.
@@ -468,20 +468,41 @@ def run_rgb_unet_model(logs,
     :param learning_rate: learning rate for optimizer.
     :param patience: number of steps to tolerate non-improving accuracy
     """
-    # pylint: disable=line-too-long
+    now = datetime.datetime.now()
+    date_format = now.today().strftime("%Y-%m-%d")
+    time_format = now.time().strftime("%H-%M-%S")
+    logfile_name = 'rgbunet-' \
+                   + date_format \
+                   + '-' \
+                   + time_format \
+                   + '-' \
+                   + str(os.getpid()) \
+                   + '.log'
+
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
+
     handler = logging.StreamHandler()
     handler.setLevel(logging.INFO)
     handler.setFormatter(formatter)
     root_logger.addHandler(handler)
 
-    LOGGER.info("Starting liverseg.py version: %s", __version__)
-    LOGGER.info("Starting liverseg.py with platform: %s.", str(platform.uname()))
-    LOGGER.info("Starting liverseg.py with cwd: %s.", os.getcwd())
-    LOGGER.info("Starting liverseg.py with path: %s.", sys.path)
+    file_handler = logging.FileHandler(logfile_name)
+    file_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
+
+    username = getpass.getuser()
+
+    LOGGER.info("Starting RGBUNet version: %s", __version__)
+    LOGGER.info("Starting RGBUNet with username: %s.", username)
+    LOGGER.info("Starting RGBUNet with platform: %s.", str(platform.uname()))
+    LOGGER.info("Starting RGBUNet with cwd: %s.", os.getcwd())
+    LOGGER.info("Starting RGBUNet with path: %s.", sys.path)
+    LOGGER.info("Starting RGBUNet with save: %s.", save)
+    LOGGER.info("Starting RGBUNet with test: %s.", test)
+    LOGGER.info("Starting RGBUNet with prediction: %s.", prediction)
 
     # No point loading network to test an image, if command line args wrong.
     # So, check this up front.
@@ -489,15 +510,15 @@ def run_rgb_unet_model(logs,
         if prediction is None:
             raise ValueError("If you specify a test image, you must specify a filename for the output prediction.")
 
-    liver_seg = RGBUnet(logs, data, working, omit, model,
-                        learning_rate=learning_rate,
-                        epochs=epochs,
-                        batch_size=batch_size,
-                        patience=patience
-                        )
+    rgbunet = RGBUNet(logs, data, working, omit, model,
+                      learning_rate=learning_rate,
+                      epochs=epochs,
+                      batch_size=batch_size,
+                      patience=patience
+                      )
 
     if save is not None:
-        liver_seg.save_model(save)
+        rgbunet.save_model(save)
 
     if test is not None:
         img = cv2.imread(test)
@@ -505,7 +526,7 @@ def run_rgb_unet_model(logs,
         start_time = datetime.datetime.now()
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        mask = liver_seg.predict(img)
+        mask = rgbunet.predict(img)
 
         end_time = datetime.datetime.now()
         time_taken = (end_time - start_time).total_seconds()

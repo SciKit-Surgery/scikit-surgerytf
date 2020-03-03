@@ -113,6 +113,9 @@ where DATA is a directory like::
     DATA/PN/masks
     DATA/PN/images
 
+and P1,P2..PN just represents some patient identifier. Images and masks, though in different
+folders, must have the same name.
+
 Developing
 ----------
 

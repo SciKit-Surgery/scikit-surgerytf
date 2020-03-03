@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Module to implement a semantic (pixelwise) segmentation of images of the liver.
+Module to implement a semantic (pixelwise) segmentation using UNet on 512x512.
 """
 
 #pylint: disable=line-too-long, too-many-instance-attributes, unsubscriptable-object, too-many-branches, too-many-arguments
@@ -23,9 +23,9 @@ from sksurgerytf import __version__
 LOGGER = logging.getLogger(__name__)
 
 
-class LiverSeg:
+class RGBUnet:
     """
-    Class to encapsulate LiverSeg semantic (pixelwise) segmentation network.
+    Class to encapsulate RGBUnet semantic (pixelwise) segmentation network.
 
     Thanks to
     `Zhixuhao <https://github.com/zhixuhao/unet/blob/master/model.py>`_,
@@ -438,7 +438,7 @@ class LiverSeg:
         self.model.save(filename)
 
 
-def run_liverseg_model(logs,
+def run_rgb_unet_model(logs,
                        data,
                        working,
                        omit,
@@ -489,12 +489,12 @@ def run_liverseg_model(logs,
         if prediction is None:
             raise ValueError("If you specify a test image, you must specify a filename for the output prediction.")
 
-    liver_seg = LiverSeg(logs, data, working, omit, model,
-                         learning_rate=learning_rate,
-                         epochs=epochs,
-                         batch_size=batch_size,
-                         patience=patience
-                         )
+    liver_seg = RGBUnet(logs, data, working, omit, model,
+                        learning_rate=learning_rate,
+                        epochs=epochs,
+                        batch_size=batch_size,
+                        patience=patience
+                        )
 
     if save is not None:
         liver_seg.save_model(save)

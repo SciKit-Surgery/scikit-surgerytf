@@ -21,3 +21,5 @@ doc/notebooks/logs/
 # Jupyter output
 doc/notebooks/.ipynb_checkpoints/
 
+# Logging in top-level dir.
+rgbunet-*.log

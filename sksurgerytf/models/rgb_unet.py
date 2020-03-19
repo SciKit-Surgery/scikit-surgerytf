@@ -134,7 +134,10 @@ class RGBUNet:
         """
         #pylint: disable=no-self-use
         for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
-            destination = os.path.join(dst_dir, os.path.basename(image_file))
+            destination = os.path.join(dst_dir,
+                                       os.path.basename(
+                                           os.path.dirname(src_dir)) + "_" +
+                                       os.path.basename(image_file))
             os.symlink(image_file, destination)
 
     def _copy_data(self):

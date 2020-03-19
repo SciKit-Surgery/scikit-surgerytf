@@ -373,19 +373,21 @@ class RGBUNet:
 
         if self.omit is not None:
             checkpoint_filename = "checkpoint-" + self.omit + ".hdf5"
+            monitor = 'val_accuracy'
         else:
             checkpoint_filename = "checkpoint-all.hdf5"
+            monitor = 'accuracy'
 
         filepath = os.path.join(Path(self.logs),
                                 checkpoint_filename)
 
         checkpoint = keras.callbacks.ModelCheckpoint(filepath,
-                                                     monitor='val_accuracy',
+                                                     monitor=monitor,
                                                      verbose=1,
                                                      save_best_only=True,
                                                      mode='max')
 
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+        early_stopping = keras.callbacks.EarlyStopping(monitor=monitor,
                                                        patience=self.patience,
                                                        restore_best_weights=True
                                                        )

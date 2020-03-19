@@ -128,6 +128,15 @@ class RGBUNet:
         else:
             self.model = keras.models.load_model(model)
 
+    def _copy_images(self, src_dir, dst_dir):
+        """
+        Symlinks .png files from one directory to another.
+        """
+        #pylint: disable=no-self-use
+        for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
+            destination = os.path.join(dst_dir, os.path.basename(image_file))
+            os.symlink(image_file, destination)
+
     def _copy_data(self):
         """
         Copies data from data directory to working directory.
@@ -193,29 +202,22 @@ class RGBUNet:
             mask_sub_dir = os.path.join(sub_dir, 'masks')
 
             if self.omit is not None and self.omit == os.path.basename(sub_dir):
-                LOGGER.info("Copying validate images from %s to %s",
+                LOGGER.info("Sym-linking validate images from %s to %s",
                             images_sub_dir, self.validate_images_working_dir)
-                for image_file in glob.iglob(
-                        os.path.join(images_sub_dir, "*.png")):
-                    shutil.copy(image_file, self.validate_images_working_dir)
+                self._copy_images(images_sub_dir,
+                                  self.validate_images_working_dir)
 
-                LOGGER.info("Copying validate masks from %s to %s",
+                LOGGER.info("Sym-linking validate masks from %s to %s",
                             mask_sub_dir, self.validate_masks_working_dir)
-                for mask_file in glob.iglob(
-                        os.path.join(mask_sub_dir, "*.png")):
-                    shutil.copy(mask_file, self.validate_masks_working_dir)
+                self._copy_images(mask_sub_dir, self.validate_masks_working_dir)
             else:
-                LOGGER.info("Copying train images from %s to %s",
+                LOGGER.info("Sym-linking train images from %s to %s",
                             images_sub_dir, self.train_images_working_dir)
-                for image_file in glob.iglob(
-                        os.path.join(images_sub_dir, "*.png")):
-                    shutil.copy(image_file, self.train_images_working_dir)
+                self._copy_images(images_sub_dir, self.train_images_working_dir)
 
-                LOGGER.info("Copying train masks from %s to %s",
+                LOGGER.info("Sym-linking train masks from %s to %s",
                             mask_sub_dir, self.train_masks_working_dir)
-                for mask_file in glob.iglob(
-                        os.path.join(mask_sub_dir, "*.png")):
-                    shutil.copy(mask_file, self.train_masks_working_dir)
+                self._copy_images(mask_sub_dir, self.train_masks_working_dir)
 
     def _load_data(self):
         """

@@ -20,6 +20,7 @@ import numpy as np
 import cv2
 from tensorflow import keras
 from sksurgerytf import __version__
+import sksurgerytf.callbacks.segmentation_history as sh
 
 LOGGER = logging.getLogger(__name__)
 
@@ -395,19 +396,37 @@ class RGBUNet:
                                                        restore_best_weights=True
                                                        )
 
-        callbacks_list = [tensorboard_callback, checkpoint, early_stopping]
-
         validation_steps = None
         if self.number_validation_samples is not None:
             validation_steps = self.number_validation_samples // self.batch_size
+            segmentation_history = sh.SegmentationHistory(tensor_board_dir=log_dir,
+                                                          data=self.validate_generator,
+                                                          number_of_samples=self.number_validation_samples,
+                                                          desired_number_images=10)
+        else:
+            segmentation_history = sh.SegmentationHistory(tensor_board_dir=log_dir,
+                                                          data=self.train_generator,
+                                                          number_of_samples=self.number_training_samples,
+                                                          desired_number_images=10)
 
-        self.model.fit_generator(
+        callbacks_list = [tensorboard_callback, checkpoint, early_stopping, segmentation_history]
+
+        LOGGER.info("Training. Train set=%s images, batch size=%s number of batches=%s",
+                    str(self.number_training_samples),
+                    str(self.batch_size),
+                    str(self.number_training_samples // self.batch_size))
+        LOGGER.info("Training. Validation set=%s images, batch size=%s number of batches=%s",
+                    str(self.number_validation_samples),
+                    str(self.batch_size),
+                    str(self.number_validation_samples // self.batch_size))
+
+        self.model.fit(
             self.train_generator,
             steps_per_epoch=self.number_training_samples // self.batch_size,
             epochs=self.epochs,
             verbose=1,
-            validation_data=self.validate_generator, # this will be None if you didn't specify self.omit
-            validation_steps=validation_steps,       # and then this won't matter if the above is None.
+            validation_data=self.validate_generator,  # this will be None if you didn't specify self.omit
+            validation_steps=validation_steps,        # and then this won't matter if the above is None.
             callbacks=callbacks_list
         )
 

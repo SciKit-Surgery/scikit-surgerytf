@@ -114,20 +114,25 @@ class RGBUNet:
         # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
 
-        if model is None:
+        if model is not None:
+            LOGGER.info("Loading Model")
+            self.model = keras.models.load_model(model)
+            LOGGER.info("Loaded Model")
+        else:
+            LOGGER.info("Building Model")
+            self.model = self._build_model()
+            LOGGER.info("Built Model")
+        self.model.summary()
 
-            if self.working is None:
-                raise ValueError("You must specify a working (temp) directory")
-            if self.data is None:
-                raise ValueError("You must specify the data directory")
+        if model is None and self.working is None:
+            raise ValueError("You must specify a working (temp) directory")
+        if model is None and self.data is None:
+            raise ValueError("You must specify the data directory")
 
+        if self.data is not None and self.working is not None:
             self._copy_data()
             self._load_data()
-            self._build_model()
             self.train()
-
-        else:
-            self.model = keras.models.load_model(model)
 
     def _copy_images(self, src_dir, dst_dir):
         """
@@ -304,9 +309,6 @@ class RGBUNet:
 
         Currently, we are using a standard UNet on RGB images.
         """
-
-        LOGGER.info("Building Model")
-
         inputs = keras.Input(self.input_size)
 
         # Left side of UNet
@@ -347,10 +349,7 @@ class RGBUNet:
         conv9 = keras.layers.Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
         conv10 = keras.layers.Conv2D(1, 1, activation='sigmoid')(conv9)
 
-        self.model = keras.models.Model(inputs=inputs, outputs=conv10)
-        self.model.summary()
-
-        LOGGER.info("Built Model")
+        return keras.models.Model(inputs=inputs, outputs=conv10)
 
     def train(self):
         """

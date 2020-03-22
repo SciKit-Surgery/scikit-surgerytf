@@ -21,6 +21,7 @@ import cv2
 from tensorflow import keras
 from sksurgerytf import __version__
 import sksurgerytf.callbacks.segmentation_history as sh
+import sksurgerytf.utils.segmentation_statistics as ss
 
 LOGGER = logging.getLogger(__name__)
 
@@ -533,7 +534,14 @@ def run_rgb_unet_model(logs,
     # So, check this up front.
     if test is not None:
         if prediction is None:
-            raise ValueError("If you specify a test image, you must specify a filename for the output prediction.")
+            raise ValueError("If you specify a test parameter, you must also "
+                             "specify the prediction parameter.")
+        if test == prediction:
+            raise ValueError("If you specify a test parameter, the value for "
+                             "the prediction parameter must be different.")
+        if os.path.isfile(prediction) or os.path.isdir(prediction):
+            raise ValueError("The prediction parameter should "
+                             "be a new file or directory")
 
     rgbunet = RGBUNet(logs, data, working, omit, model,
                       learning_rate=learning_rate,
@@ -546,17 +554,33 @@ def run_rgb_unet_model(logs,
         rgbunet.save_model(save)
 
     if test is not None:
-        img = cv2.imread(test)
 
-        start_time = datetime.datetime.now()
+        if os.path.isfile(test):
+            test_files = [test]
+        elif os.path.isdir(test):
+            test_files = ss.get_sorted_files_from_dir(test)
+            if not os.path.exists(prediction):
+                os.makedirs(prediction)
+        else:
+            raise ValueError("Invalid value for test parameter ")
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        mask = rgbunet.predict(img)
+        for test_file in test_files:
 
-        end_time = datetime.datetime.now()
-        time_taken = (end_time - start_time).total_seconds()
+            img = cv2.imread(test_file)
 
-        LOGGER.info("Prediction on %s took %s seconds.",
-                    test, str(time_taken))
+            start_time = datetime.datetime.now()
 
-        cv2.imwrite(prediction, mask)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            mask = rgbunet.predict(img)
+
+            end_time = datetime.datetime.now()
+            time_taken = (end_time - start_time).total_seconds()
+
+            LOGGER.info("Prediction on %s took %s seconds.",
+                        test_file, str(time_taken))
+
+            if os.path.isdir(prediction):
+                cv2.imwrite(
+                    os.path.join(prediction, os.path.basename(test_file)), mask)
+            else:
+                cv2.imwrite(prediction, mask)

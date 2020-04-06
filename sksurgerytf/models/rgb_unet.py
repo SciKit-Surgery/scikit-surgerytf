@@ -415,10 +415,12 @@ class RGBUNet:
                     str(self.number_training_samples),
                     str(self.batch_size),
                     str(self.number_training_samples // self.batch_size))
-        LOGGER.info("Training. Validation set=%s images, batch size=%s number of batches=%s",
-                    str(self.number_validation_samples),
-                    str(self.batch_size),
-                    str(self.number_validation_samples // self.batch_size))
+
+        if self.number_validation_samples is not None:
+            LOGGER.info("Training. Validation set=%s images, batch size=%s number of batches=%s",
+                        str(self.number_validation_samples),
+                        str(self.batch_size),
+                        str(self.number_validation_samples // self.batch_size))
 
         self.model.fit(
             self.train_generator,

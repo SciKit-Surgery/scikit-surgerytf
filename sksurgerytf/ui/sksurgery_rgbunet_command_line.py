@@ -50,12 +50,12 @@ def main(args=None):
     parser.add_argument("-t", "--test",
                         required=False,
                         type=str,
-                        help="Test/predict input image, RGB, .png, .jpg")
+                        help="Test input image/directory, RGB, .png, .jpg")
 
     parser.add_argument("-p", "--prediction",
                         required=False,
                         type=str,
-                        help="Test/predict output image, RGB, .png, .jpg")
+                        help="Test output image/directory, RGB, .png, .jpg")
 
     parser.add_argument("-e", "--epochs",
                         required=False,

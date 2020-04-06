@@ -20,6 +20,8 @@ import numpy as np
 import cv2
 from tensorflow import keras
 from sksurgerytf import __version__
+import sksurgerytf.callbacks.segmentation_history as sh
+import sksurgerytf.utils.segmentation_statistics as ss
 
 LOGGER = logging.getLogger(__name__)
 
@@ -113,20 +115,37 @@ class RGBUNet:
         # To fix issues with SSL certificates on CI servers.
         ssl._create_default_https_context = ssl._create_unverified_context
 
-        if model is None:
+        if model is not None:
+            LOGGER.info("Loading Model")
+            self.model = keras.models.load_model(model)
+            LOGGER.info("Loaded Model")
+        else:
+            LOGGER.info("Building Model")
+            self.model = self._build_model()
+            LOGGER.info("Built Model")
+        self.model.summary()
 
-            if self.working is None:
-                raise ValueError("You must specify a working (temp) directory")
-            if self.data is None:
-                raise ValueError("You must specify the data directory")
+        if model is None and self.working is None:
+            raise ValueError("You must specify a working (temp) directory")
+        if model is None and self.data is None:
+            raise ValueError("You must specify the data directory")
 
+        if self.data is not None and self.working is not None:
             self._copy_data()
             self._load_data()
-            self._build_model()
             self.train()
 
-        else:
-            self.model = keras.models.load_model(model)
+    def _copy_images(self, src_dir, dst_dir):
+        """
+        Symlinks .png files from one directory to another.
+        """
+        #pylint: disable=no-self-use
+        for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
+            destination = os.path.join(dst_dir,
+                                       os.path.basename(
+                                           os.path.dirname(src_dir)) + "_" +
+                                       os.path.basename(image_file))
+            os.symlink(image_file, destination)
 
     def _copy_data(self):
         """
@@ -193,29 +212,22 @@ class RGBUNet:
             mask_sub_dir = os.path.join(sub_dir, 'masks')
 
             if self.omit is not None and self.omit == os.path.basename(sub_dir):
-                LOGGER.info("Copying validate images from %s to %s",
+                LOGGER.info("Sym-linking validate images from %s to %s",
                             images_sub_dir, self.validate_images_working_dir)
-                for image_file in glob.iglob(
-                        os.path.join(images_sub_dir, "*.png")):
-                    shutil.copy(image_file, self.validate_images_working_dir)
+                self._copy_images(images_sub_dir,
+                                  self.validate_images_working_dir)
 
-                LOGGER.info("Copying validate masks from %s to %s",
+                LOGGER.info("Sym-linking validate masks from %s to %s",
                             mask_sub_dir, self.validate_masks_working_dir)
-                for mask_file in glob.iglob(
-                        os.path.join(mask_sub_dir, "*.png")):
-                    shutil.copy(mask_file, self.validate_masks_working_dir)
+                self._copy_images(mask_sub_dir, self.validate_masks_working_dir)
             else:
-                LOGGER.info("Copying train images from %s to %s",
+                LOGGER.info("Sym-linking train images from %s to %s",
                             images_sub_dir, self.train_images_working_dir)
-                for image_file in glob.iglob(
-                        os.path.join(images_sub_dir, "*.png")):
-                    shutil.copy(image_file, self.train_images_working_dir)
+                self._copy_images(images_sub_dir, self.train_images_working_dir)
 
-                LOGGER.info("Copying train masks from %s to %s",
+                LOGGER.info("Sym-linking train masks from %s to %s",
                             mask_sub_dir, self.train_masks_working_dir)
-                for mask_file in glob.iglob(
-                        os.path.join(mask_sub_dir, "*.png")):
-                    shutil.copy(mask_file, self.train_masks_working_dir)
+                self._copy_images(mask_sub_dir, self.train_masks_working_dir)
 
     def _load_data(self):
         """
@@ -298,9 +310,6 @@ class RGBUNet:
 
         Currently, we are using a standard UNet on RGB images.
         """
-
-        LOGGER.info("Building Model")
-
         inputs = keras.Input(self.input_size)
 
         # Left side of UNet
@@ -341,10 +350,7 @@ class RGBUNet:
         conv9 = keras.layers.Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
         conv10 = keras.layers.Conv2D(1, 1, activation='sigmoid')(conv9)
 
-        self.model = keras.models.Model(inputs=inputs, outputs=conv10)
-        self.model.summary()
-
-        LOGGER.info("Built Model")
+        return keras.models.Model(inputs=inputs, outputs=conv10)
 
     def train(self):
         """
@@ -371,36 +377,58 @@ class RGBUNet:
 
         if self.omit is not None:
             checkpoint_filename = "checkpoint-" + self.omit + ".hdf5"
+            monitor = 'val_accuracy'
         else:
             checkpoint_filename = "checkpoint-all.hdf5"
+            monitor = 'accuracy'
 
         filepath = os.path.join(Path(self.logs),
                                 checkpoint_filename)
 
         checkpoint = keras.callbacks.ModelCheckpoint(filepath,
-                                                     monitor='val_accuracy',
+                                                     monitor=monitor,
                                                      verbose=1,
                                                      save_best_only=True,
                                                      mode='max')
 
-        early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy',
+        early_stopping = keras.callbacks.EarlyStopping(monitor=monitor,
                                                        patience=self.patience,
                                                        restore_best_weights=True
                                                        )
 
-        callbacks_list = [tensorboard_callback, checkpoint, early_stopping]
-
         validation_steps = None
         if self.number_validation_samples is not None:
             validation_steps = self.number_validation_samples // self.batch_size
+            segmentation_history = sh.SegmentationHistory(tensor_board_dir=log_dir,
+                                                          data=self.validate_generator,
+                                                          number_of_samples=self.number_validation_samples,
+                                                          desired_number_images=10)
+        else:
+            segmentation_history = sh.SegmentationHistory(tensor_board_dir=log_dir,
+                                                          data=self.train_generator,
+                                                          number_of_samples=self.number_training_samples,
+                                                          desired_number_images=10)
 
-        self.model.fit_generator(
+        callbacks_list = [tensorboard_callback, checkpoint, early_stopping, segmentation_history]
+
+        LOGGER.info("Training. Train set=%s images, batch size=%s number of batches=%s",
+                    str(self.number_training_samples),
+                    str(self.batch_size),
+                    str(self.number_training_samples // self.batch_size))
+
+        if self.number_validation_samples is not None:
+            LOGGER.info("Training. Validation set=%s images, batch size=%s number of batches=%s",
+                        str(self.number_validation_samples),
+                        str(self.batch_size),
+                        str(self.number_validation_samples // self.batch_size))
+
+        self.model.fit(
             self.train_generator,
             steps_per_epoch=self.number_training_samples // self.batch_size,
             epochs=self.epochs,
             verbose=1,
-            validation_data=self.validate_generator, # this will be None if you didn't specify self.omit
-            validation_steps=validation_steps,       # and then this won't matter if the above is None.
+            validation_data=self.validate_generator,  # this will be None if you didn't specify self.omit
+            validation_steps=validation_steps,        # and then this won't matter if the above is None.
             callbacks=callbacks_list
         )
 
@@ -508,7 +536,14 @@ def run_rgb_unet_model(logs,
     # So, check this up front.
     if test is not None:
         if prediction is None:
-            raise ValueError("If you specify a test image, you must specify a filename for the output prediction.")
+            raise ValueError("If you specify a test parameter, you must also "
+                             "specify the prediction parameter.")
+        if test == prediction:
+            raise ValueError("If you specify a test parameter, the value for "
+                             "the prediction parameter must be different.")
+        if os.path.isfile(prediction) or os.path.isdir(prediction):
+            raise ValueError("The prediction parameter should "
+                             "be a new file or directory")
 
     rgbunet = RGBUNet(logs, data, working, omit, model,
                       learning_rate=learning_rate,
@@ -521,17 +556,33 @@ def run_rgb_unet_model(logs,
         rgbunet.save_model(save)
 
     if test is not None:
-        img = cv2.imread(test)
 
-        start_time = datetime.datetime.now()
+        if os.path.isfile(test):
+            test_files = [test]
+        elif os.path.isdir(test):
+            test_files = ss.get_sorted_files_from_dir(test)
+            if not os.path.exists(prediction):
+                os.makedirs(prediction)
+        else:
+            raise ValueError("Invalid value for test parameter ")
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        mask = rgbunet.predict(img)
+        for test_file in test_files:
 
-        end_time = datetime.datetime.now()
-        time_taken = (end_time - start_time).total_seconds()
+            img = cv2.imread(test_file)
 
-        LOGGER.info("Prediction on %s took %s seconds.",
-                    test, str(time_taken))
+            start_time = datetime.datetime.now()
 
-        cv2.imwrite(prediction, mask)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            mask = rgbunet.predict(img)
+
+            end_time = datetime.datetime.now()
+            time_taken = (end_time - start_time).total_seconds()
+
+            LOGGER.info("Prediction on %s took %s seconds.",
+                        test_file, str(time_taken))
+
+            if os.path.isdir(prediction):
+                cv2.imwrite(
+                    os.path.join(prediction, os.path.basename(test_file)), mask)
+            else:
+                cv2.imwrite(prediction, mask)

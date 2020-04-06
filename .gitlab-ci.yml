@@ -41,12 +41,6 @@ build mac installer:
   tags:
     - shared-mac
 
-build windows installer:
-  <<: *build-skip-template
-  <<: *build-install-template
-  tags:
-    - shared-win
-
 build docs:
   <<: *build-skip-template
   script:
@@ -72,13 +66,6 @@ test macOS:
     - tox
   tags:
     - shared-mac
-
-test Windows:
-  stage: test
-  script:
-    - tox
-  tags:
-    - shared-win
 
 # Template for deploy stages that depend on 'build docs'
 # if the build stage is skipped, skip these also

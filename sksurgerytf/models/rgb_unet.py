@@ -245,7 +245,16 @@ class RGBUNet:
                                    zoom_range=[0.5, 1.0]
                                    )
 
-        validate_data_gen_args = dict(rescale=1./255)
+        validate_data_gen_args = dict(rescale=1./255,
+                                      horizontal_flip=True,
+                                      vertical_flip=True,
+                                      fill_mode='constant',
+                                      cval=0,
+                                      rotation_range=20,
+                                      width_shift_range=[-200, 200],
+                                      height_shift_range=[-100, 100],
+                                      zoom_range=[0.5, 1.0]
+                                      )
 
         train_image_datagen = keras.preprocessing.image.ImageDataGenerator(
             **train_data_gen_args)

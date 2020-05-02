@@ -9,6 +9,7 @@ Module to implement a semantic (pixelwise) segmentation using UNet on 512x512.
 import os
 import sys
 import glob
+import copy
 import logging
 import datetime
 import platform
@@ -240,19 +241,11 @@ class RGBUNet:
                                    rotation_range=10,
                                    width_shift_range=0.05,
                                    height_shift_range=0.05,
-                                   brightness_range=[0.9, 1.0],
                                    zoom_range=[0.9, 1.0]
                                    )
 
-        validate_data_gen_args = dict(rescale=1./255,
-                                      horizontal_flip=True,
-                                      vertical_flip=True,
-                                      fill_mode='nearest',
-                                      rotation_range=10,
-                                      width_shift_range=0.05,
-                                      height_shift_range=0.05,
-                                      zoom_range=[0.9, 1.0]
-                                      )
+        # This is for validation. We don't want data augmentation.
+        validate_data_gen_args = dict(rescale=1./255)
 
         train_image_datagen = keras.preprocessing.image.ImageDataGenerator(
             **train_data_gen_args)
@@ -272,7 +265,7 @@ class RGBUNet:
             batch_size=self.batch_size,
             color_mode='rgb',
             class_mode=None,
-            shuffle=True,
+            shuffle=False,
             seed=seed)
 
         train_mask_generator = train_mask_datagen.flow_from_directory(
@@ -281,7 +274,7 @@ class RGBUNet:
             batch_size=self.batch_size,
             color_mode='grayscale',
             class_mode=None,
-            shuffle=True,
+            shuffle=False,
             seed=seed)
 
         self.number_training_samples = len(train_image_generator.filepaths)
@@ -360,6 +353,7 @@ class RGBUNet:
         merge9 = keras.layers.concatenate([conv1, up9])
         conv9 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
         conv9 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
+        conv9 = keras.layers.Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
         conv10 = keras.layers.Conv2D(1, 1, padding='same', activation='sigmoid')(conv9)
 
         return keras.models.Model(inputs=inputs, outputs=conv10)

@@ -265,7 +265,7 @@ class RGBUNet:
             batch_size=self.batch_size,
             color_mode='rgb',
             class_mode=None,
-            shuffle=False,
+            shuffle=True,
             seed=seed)
 
         train_mask_generator = train_mask_datagen.flow_from_directory(
@@ -274,12 +274,12 @@ class RGBUNet:
             batch_size=self.batch_size,
             color_mode='grayscale',
             class_mode=None,
-            shuffle=False,
+            shuffle=True,
             seed=seed)
 
         self.number_training_samples = len(train_image_generator.filepaths)
 
-        self.train_generator = (pair for pair in zip(train_image_generator, train_mask_generator))
+        self.train_generator = zip(train_image_generator, train_mask_generator)
 
         if self.omit is not None:
             validate_image_generator = validate_image_datagen.flow_from_directory(
@@ -302,7 +302,7 @@ class RGBUNet:
 
             self.number_validation_samples = len(validate_image_generator.filepaths)
 
-            self.validate_generator = (pair for pair in zip(validate_image_generator, validate_mask_generator))
+            self.validate_generator = zip(validate_image_generator, validate_mask_generator)
 
     def _build_model(self):
         """

@@ -236,7 +236,7 @@ class RGBUNet:
         """
         train_data_gen_args = dict(rescale=1./255,
                                    horizontal_flip=True,
-                                   vertical_flip=True,
+                                   vertical_flip=False,
                                    fill_mode='nearest',
                                    rotation_range=10,
                                    width_shift_range=0.05,

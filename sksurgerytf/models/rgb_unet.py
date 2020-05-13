@@ -9,7 +9,6 @@ Module to implement a semantic (pixelwise) segmentation using UNet on 512x512.
 import os
 import sys
 import glob
-import copy
 import logging
 import datetime
 import platform

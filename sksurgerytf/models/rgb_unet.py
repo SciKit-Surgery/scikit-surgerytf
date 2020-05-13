@@ -46,10 +46,10 @@ class RGBUNet:
                  omit=None,
                  model=None,
                  learning_rate=0.0001,
-                 epochs=3,
-                 batch_size=4,
+                 epochs=50,
+                 batch_size=2,
                  input_size=(512, 512, 3),
-                 patience=5
+                 patience=20
                  ):
         """
         Class to run UNet on RGB images.
@@ -415,7 +415,8 @@ class RGBUNet:
                                                           number_of_samples=self.number_training_samples,
                                                           desired_number_images=10)
 
-        callbacks_list = [tensorboard_callback, checkpoint, early_stopping, segmentation_history]
+        # Note: EarlyStopping must be last. See https://github.com/keras-team/keras/issues/13381
+        callbacks_list = [tensorboard_callback, segmentation_history, checkpoint, early_stopping]
 
         LOGGER.info("Training. Train set=%s images, batch size=%s number of batches=%s",
                     str(self.number_training_samples),

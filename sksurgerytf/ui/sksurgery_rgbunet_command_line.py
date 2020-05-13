@@ -78,7 +78,7 @@ def main(args=None):
     parser.add_argument("-pat", "--patience",
                         required=False,
                         type=int,
-                        default=5,
+                        default=20,
                         help="Patience (early stopping tolerance, #steps.)")
 
     version_string = __version__

@@ -45,10 +45,14 @@ def test_shuffle():
 
     train_generator = zip(train_image_generator, train_mask_generator)
 
+    counter = 0
     for x, y in train_generator:
         image = x[0].astype(np.ubyte)
         bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         mask = y[0].astype(np.ubyte)
-        cv2.imwrite(os.path.join('tests/output/', 'image.png'), bgr_image)
-        cv2.imwrite(os.path.join('tests/output/', 'mask.png'), mask)
-        print("Checking shuffle)")
+        cv2.imwrite(os.path.join('tests/output/', 'shuffle_image_' + str(counter) + '.png'), bgr_image)
+        cv2.imwrite(os.path.join('tests/output/', 'shuffle_mask_' + str(counter) + '.png'), mask)
+        print("Checking shuffle")
+        counter = counter + 1
+        if counter == 10:
+            break

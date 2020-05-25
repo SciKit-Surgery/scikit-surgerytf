@@ -551,6 +551,14 @@ def run_rgb_unet_model(logs,
             raise ValueError("The prediction parameter should "
                              "be a new file or directory")
 
+    if save is not None:
+        dirname = os.path.dirname(save)
+        if os.path.exists(dirname) and not os.path.isdir(dirname):
+            raise ValueError("Path:" + str(dirname)
+                             + " exists, but is not a directory")
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
     rgbunet = RGBUNet(logs, data, working, omit, model,
                       learning_rate=learning_rate,
                       epochs=epochs,

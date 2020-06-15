@@ -1,18 +1,18 @@
 scikit-surgerytf
 ===============================
 
-.. image:: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/raw/master/project-icon.png
+.. image:: https://github.com/UCL/scikit-surgerytf/raw/master/project-icon.png
    :height: 128px
    :width: 128px
-   :target: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
+   :target: https://github.com/UCL/scikit-surgerytf
    :alt: Logo
 
-.. image:: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/badges/master/pipeline.svg
-   :target: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/pipelines
-   :alt: GitLab-CI test status
+.. image:: https://github.com/UCL/scikit-surgerytf/workflows/.github/workflows/ci.yml/badge.svg
+   :target: https://github.com/UCL/scikit-surgerytf/actions
+   :alt: GitHub Actions CI status
 
-.. image:: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/badges/master/coverage.svg
-    :target: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/commits/master
+.. image:: https://coveralls.io/repos/github/UCL/scikit-surgerytf/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/UCL/scikit-surgerytf?branch=master
     :alt: Test coverage
 
 .. image:: https://readthedocs.org/projects/scikit-surgerytf/badge/?version=latest

@@ -17,7 +17,7 @@ setup(
     description='scikit-surgerytf is a Python package for Tensor Flow examples and utilities',
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    url='https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf',
+    url='https://github.com/UCL/scikit-surgerytf',
     author='Matt Clarkson',
     author_email='m.clarkson@ucl.ac.uk',
     license='Apache Software License 2.0',

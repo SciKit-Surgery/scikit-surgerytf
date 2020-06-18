@@ -78,7 +78,7 @@ First create a clean python environment, just installing tox::
 
 Then you get the code, and use tox to install all other dependencies::
 
-    git clone https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
+    git clone https://github.com/UCL/scikit-surgerytf
     cd scikit-surgerytf
     # edit requirements.txt, changing tensorflow to tensorflow-gpu.
     # The default is the CPU version just for cross platform testing,
@@ -126,7 +126,7 @@ You can clone the repository using the following command:
 
 ::
 
-    git clone https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
+    git clone https://github.com/UCL/scikit-surgerytf
 
 
 Running tests
@@ -149,7 +149,7 @@ You can pip install directly from the repository as follows:
 
 ::
 
-    pip install git+https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
+    pip install git+https://github.com/UCL/scikit-surgerytf
 
 
 
@@ -180,12 +180,12 @@ Supported by `Wellcome`_ and `EPSRC`_.
 
 
 .. _`Wellcome EPSRC Centre for Interventional and Surgical Sciences`: http://www.ucl.ac.uk/weiss
-.. _`source code repository`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf
+.. _`source code repository`: https://github.com/UCL/scikit-surgerytf
 .. _`Documentation`: https://scikit-surgerytf.readthedocs.io
 .. _`SNAPPY`: https://weisslab.cs.ucl.ac.uk/WEISS/PlatformManagement/SNAPPY/wikis/home
 .. _`University College London (UCL)`: http://www.ucl.ac.uk/
 .. _`Wellcome`: https://wellcome.ac.uk/
 .. _`EPSRC`: https://www.epsrc.ac.uk/
-.. _`contributing guidelines`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/blob/master/CONTRIBUTING.rst
-.. _`license file`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgerytf/blob/master/LICENSE
+.. _`contributing guidelines`: https://github.com/UCL/scikit-surgerytf/blob/master/CONTRIBUTING.rst
+.. _`license file`: https://github.com/UCL/scikit-surgerytf/blob/master/LICENSE
 .. _`PythonTemplate`: https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/PythonTemplate

@@ -38,6 +38,7 @@ class SegmentationHistory(keras.callbacks.Callback):
         self.modulo = number_of_samples // desired_number_images
 
     # pylint: disable=unused-argument
+    #pylint:disable=signature-differs
     def on_epoch_end(self, epoch, logs):
         """
         Called at the end of each epoch, so we can log data.
@@ -73,6 +74,7 @@ class SegmentationHistory(keras.callbacks.Callback):
         :param npyfile: block of data, see above method.
         :param step: some int to indicate progress, e.g. batch number or epoch.
         """
+        #pylint:disable=not-context-manager
         image = np.reshape(npyfile, (-1,
                                      npyfile.shape[0],
                                      npyfile.shape[1],

@@ -303,22 +303,24 @@ class RGBUNet:
 
             self.validate_generator = zip(validate_image_generator, validate_mask_generator)
 
+    # pylint: disable=no-self-use
     def _create_2d_block(self, input_tensor, num_filters, kernel_size, batch_norm=True):
 
-        x = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(input_tensor)
+        model = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(input_tensor)
 
         if batch_norm:
-            x = keras.layers.BatchNormalization()(x)
-        x = keras.layers.Activation('relu')(x)
+            model = keras.layers.BatchNormalization()(model)
 
-        x = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(x)
+        model = keras.layers.Activation('relu')(model)
+
+        model = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(model)
 
         if batch_norm:
-            x = x = keras.layers.BatchNormalization()(x)
+            model = keras.layers.BatchNormalization()(model)
 
-        x = keras.layers.Activation('relu')(x)
+        model = keras.layers.Activation('relu')(model)
 
-        return x
+        return model
 
     def _build_model(self):
         """
@@ -351,27 +353,8 @@ class RGBUNet:
         pool4 = keras.layers.MaxPooling2D((pooling_size, pooling_size))(conv4)
         pool4 = keras.layers.Dropout(dropout)(pool4)
 
-        conv5 = self._create_2d_block(pool4, num_filters * 16, kernel_size=kernel_size, batch_norm=batch_norm)
-
-        #conv1 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
-        #conv1 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
-        #pool1 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1)
-
-        #conv2 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool1)
-        #conv2 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv2)
-        #pool2 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2)
-
-        #conv3 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool2)
-        #conv3 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv3)
-        #pool3 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv3)
-
-        #conv4 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool3)
-        #conv4 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv4)
-        #pool4 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv4)
-
         # Bottom of UNet
-        #conv5 = keras.layers.Conv2D(1024, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool4)
-        #conv5 = keras.layers.Conv2D(1024, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv5)
+        conv5 = self._create_2d_block(pool4, num_filters * 16, kernel_size=kernel_size, batch_norm=batch_norm)
 
         # Right side of UNet
         up6 = keras.layers.Conv2DTranspose(num_filters * 8, 3, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv5)
@@ -393,25 +376,6 @@ class RGBUNet:
         up9 = keras.layers.concatenate([up9, conv1])
         up9 = keras.layers.Dropout(dropout)(up9)
         conv9 = self._create_2d_block(up9, num_filters * 1, kernel_size=3, batch_norm=batch_norm)
-
-#        conv6 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge6)
-#        conv6 = keras.layers.Conv2D(512, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv6)
-
-#        up7 = keras.layers.Conv2DTranspose(256, 2, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv6)
-#        merge7 = keras.layers.concatenate([conv3, up7])
-#        conv7 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge7)
-#        conv7 = keras.layers.Conv2D(256, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv7)
-
-#        up8 = keras.layers.Conv2DTranspose(128, 2, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv7)
-#        merge8 = keras.layers.concatenate([conv2, up8])
-#        conv8 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge8)
-#        conv8 = keras.layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv8)
-
-#        up9 = keras.layers.Conv2DTranspose(64, 2, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv8)
-#        merge9 = keras.layers.concatenate([conv1, up9])
-#        conv9 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(merge9)
-#        conv9 = keras.layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
-#        conv9 = keras.layers.Conv2D(2, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv9)
 
         conv10 = keras.layers.Conv2D(1, 1, padding='same', activation='sigmoid')(conv9)
 

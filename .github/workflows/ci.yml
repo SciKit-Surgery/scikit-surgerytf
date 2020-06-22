@@ -5,6 +5,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
 
+    # Not running CI on mac, as there are issues with setting up
+    # the GPU stuff. But it is possible to run locally on Mac.
     strategy:
       fail-fast: false
       matrix:

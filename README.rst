@@ -1,11 +1,13 @@
 scikit-surgerytf
 ===============================
 
-.. image:: https://github.com/UCL/scikit-surgerytf/raw/master/project-icon.png
+.. image:: https://github.com/UCL/scikit-surgerytf/raw/master/weiss_logo.png
    :height: 128px
    :width: 128px
    :target: https://github.com/UCL/scikit-surgerytf
    :alt: Logo
+
+   |
 
 .. image:: https://github.com/UCL/scikit-surgerytf/workflows/.github/workflows/ci.yml/badge.svg
    :target: https://github.com/UCL/scikit-surgerytf/actions
@@ -35,8 +37,18 @@ re-implement stuff, or struggle to get someone else's code running. Researchers
 can commit their research to this repository, or use the `PythonTemplate`_ to
 generate their own project as a home for their new world-beating algorithm!
 
-Features
-----------
+.. features-start
+
+Features/Networks
+-----------------
+
+* sksurgeryfashion.py: The usual FashionMNIST example, for learning purposes.
+* sksurgeryrgbunet.py: RGB `UNet <https://doi.org/10.1007/978-3-319-24574-4_28>`_ example.
+
+.. features-end
+
+Design Principles
+-----------------
 
 Each project herein should provide the following:
 
@@ -56,12 +68,6 @@ Optional features could include:
 
 * Small test projects that train quickly to completion won't need checkpointing, but large ones will.
 
-
-Networks
---------
-
-* sksurgeryfashion.py: The usual FashionMNIST example, for learning purposes.
-* sksurgeryrgbunet.py: RGB `UNet <https://doi.org/10.1007/978-3-319-24574-4_28>`_ example.
 
 Usage
 -----

@@ -1,5 +1,5 @@
 Segmentation
-============
+^^^^^^^^^^^^
 
 Liver Segmentation UNet
 -----------------------
@@ -8,7 +8,7 @@ Liver Segmentation UNet
     :members:
 
 Fashion MNIST Example Classifer
-===============================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: sksurgerytf.models.fashion
     :members:

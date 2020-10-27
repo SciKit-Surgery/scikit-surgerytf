@@ -42,8 +42,8 @@ generate their own project as a home for their new world-beating algorithm!
 Features/Networks
 -----------------
 
-* sksurgeryfashion.py: The usual FashionMNIST example, for learning purposes.
-* sksurgeryrgbunet.py: RGB `UNet <https://doi.org/10.1007/978-3-319-24574-4_28>`_ example.
+* `Liver Segmentation UNet <https://scikit-surgerytf.readthedocs.io/en/latest/module_ref.html#segmentation>`_: RGB `UNet <https://doi.org/10.1007/978-3-319-24574-4_28>`_ example.
+* : `The usual FashionMNIST example <https://scikit-surgerytf.readthedocs.io/en/latest/module_ref.html#module-sksurgerytf.models.fashion>`_, for learning purposes.
 
 .. features-end
 

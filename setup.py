@@ -43,7 +43,7 @@ setup(
 
     packages=find_packages(
         exclude=[
-            'doc',
+            'docs',
             'tests',
         ]
     ),

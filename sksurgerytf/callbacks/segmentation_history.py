@@ -7,7 +7,7 @@ import numpy as np
 from tensorflow import keras
 import tensorflow as tf
 
-
+#pylint:disable=super-with-arguments
 class SegmentationHistory(keras.callbacks.Callback):
     """
     Class to implement Tensorboard callback to save a batch of images and their

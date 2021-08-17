@@ -278,7 +278,7 @@ class RGBUNet:
 
         self.number_training_samples = len(train_image_generator.filepaths)
 
-        self.train_generator = zip(train_image_generator, train_mask_generator)
+        self.train_generator = (pair for pair in zip(train_image_generator, train_mask_generator))
 
         if self.omit is not None:
             validate_image_generator = validate_image_datagen.flow_from_directory(

@@ -58,7 +58,7 @@ setup(
         'opencv-contrib-python-headless>=4.2.0.32',
         'tensorflow==2.0.0',
         'tensorflow-datasets==1.3.0',
-        'matplotlib==3.1.1'
+        'matplotlib'
     ],
 
     entry_points={

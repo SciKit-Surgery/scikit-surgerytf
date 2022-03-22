@@ -7,8 +7,6 @@ scikit-surgerytf
    :target: https://github.com/UCL/scikit-surgerytf
    :alt: Logo
 
-   | 
-
 .. image:: https://github.com/UCL/scikit-surgerytf/workflows/.github/workflows/ci.yml/badge.svg
    :target: https://github.com/UCL/scikit-surgerytf/actions
    :alt: GitHub Actions CI status

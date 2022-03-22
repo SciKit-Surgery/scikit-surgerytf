@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-ver: [3.6, 3.7]
+        python-ver: [3.7]
         os: [ubuntu-18.04, windows-latest]
         experimental: [false]
         include:
@@ -18,6 +18,12 @@ jobs:
             os: ubuntu-18.04
             experimental: true
           - python-ver: 3.8
+            os: windows-latest
+            experimental: true
+          - python-ver: 3.9
+            os: ubuntu-18.04
+            experimental: true
+          - python-ver: 3.9
             os: windows-latest
             experimental: true
 

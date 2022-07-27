@@ -135,18 +135,6 @@ class RGBUNet:
             self._load_data()
             self.train()
 
-    def _copy_images(self, src_dir, dst_dir):
-        """
-        Symlinks .png files from one directory to another.
-        """
-        #pylint: disable=no-self-use
-        for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
-            destination = os.path.join(dst_dir,
-                                       os.path.basename(
-                                           os.path.dirname(src_dir)) + "_" +
-                                       os.path.basename(image_file))
-            os.symlink(image_file, destination)
-
     def _copy_data(self):
         """
         Copies data from data directory to working directory.
@@ -214,20 +202,20 @@ class RGBUNet:
             if self.omit is not None and self.omit == os.path.basename(sub_dir):
                 LOGGER.info("Sym-linking validate images from %s to %s",
                             images_sub_dir, self.validate_images_working_dir)
-                self._copy_images(images_sub_dir,
-                                  self.validate_images_working_dir)
+                _copy_images(images_sub_dir,
+                              self.validate_images_working_dir)
 
                 LOGGER.info("Sym-linking validate masks from %s to %s",
                             mask_sub_dir, self.validate_masks_working_dir)
-                self._copy_images(mask_sub_dir, self.validate_masks_working_dir)
+                _copy_images(mask_sub_dir, self.validate_masks_working_dir)
             else:
                 LOGGER.info("Sym-linking train images from %s to %s",
                             images_sub_dir, self.train_images_working_dir)
-                self._copy_images(images_sub_dir, self.train_images_working_dir)
+                _copy_images(images_sub_dir, self.train_images_working_dir)
 
                 LOGGER.info("Sym-linking train masks from %s to %s",
                             mask_sub_dir, self.train_masks_working_dir)
-                self._copy_images(mask_sub_dir, self.train_masks_working_dir)
+                _copy_images(mask_sub_dir, self.train_masks_working_dir)
 
     def _load_data(self):
         """
@@ -625,3 +613,15 @@ def run_rgb_unet_model(logs,
                     os.path.join(prediction, os.path.basename(test_file)), mask)
             else:
                 cv2.imwrite(prediction, mask)
+
+
+def _copy_images(src_dir, dst_dir):
+    """
+    Symlinks .png files from one directory to another.
+    """
+    for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
+        destination = os.path.join(dst_dir,
+                                   os.path.basename(
+                                       os.path.dirname(src_dir)) + "_" +
+                                   os.path.basename(image_file))
+        os.symlink(image_file, destination)

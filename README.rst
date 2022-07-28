@@ -20,8 +20,8 @@ scikit-surgerytf
     :target: http://scikit-surgerytf.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
- .. image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
-   :target: CODE_OF_CONDUCT.md
+.. image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+   :target: https://github.com/SciKit-Surgery/scikit-surgery/blob/master/CODE_OF_CONDUCT.md
 
 .. image:: https://img.shields.io/twitter/follow/scikit_surgery?style=social
    :target: https://twitter.com/scikit_surgery?ref_src=twsrc%5Etfw

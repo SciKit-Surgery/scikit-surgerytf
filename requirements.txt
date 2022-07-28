@@ -8,7 +8,7 @@ ipykernel
 nbsphinx
 Pillow
 scipy
-opencv-contrib-python-headless>=4.2.0.32
+opencv-contrib-python-headless>=4.2.0.32,<4.6
 tensorflow
 tensorflow-datasets
 matplotlib

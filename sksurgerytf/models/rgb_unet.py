@@ -135,18 +135,6 @@ class RGBUNet:
             self._load_data()
             self.train()
 
-    def _copy_images(self, src_dir, dst_dir):
-        """
-        Symlinks .png files from one directory to another.
-        """
-        #pylint: disable=no-self-use
-        for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
-            destination = os.path.join(dst_dir,
-                                       os.path.basename(
-                                           os.path.dirname(src_dir)) + "_" +
-                                       os.path.basename(image_file))
-            os.symlink(image_file, destination)
-
     def _copy_data(self):
         """
         Copies data from data directory to working directory.
@@ -214,20 +202,20 @@ class RGBUNet:
             if self.omit is not None and self.omit == os.path.basename(sub_dir):
                 LOGGER.info("Sym-linking validate images from %s to %s",
                             images_sub_dir, self.validate_images_working_dir)
-                self._copy_images(images_sub_dir,
-                                  self.validate_images_working_dir)
+                _copy_images(images_sub_dir,
+                              self.validate_images_working_dir)
 
                 LOGGER.info("Sym-linking validate masks from %s to %s",
                             mask_sub_dir, self.validate_masks_working_dir)
-                self._copy_images(mask_sub_dir, self.validate_masks_working_dir)
+                _copy_images(mask_sub_dir, self.validate_masks_working_dir)
             else:
                 LOGGER.info("Sym-linking train images from %s to %s",
                             images_sub_dir, self.train_images_working_dir)
-                self._copy_images(images_sub_dir, self.train_images_working_dir)
+                _copy_images(images_sub_dir, self.train_images_working_dir)
 
                 LOGGER.info("Sym-linking train masks from %s to %s",
                             mask_sub_dir, self.train_masks_working_dir)
-                self._copy_images(mask_sub_dir, self.train_masks_working_dir)
+                _copy_images(mask_sub_dir, self.train_masks_working_dir)
 
     def _load_data(self):
         """
@@ -303,25 +291,6 @@ class RGBUNet:
 
             self.validate_generator = zip(validate_image_generator, validate_mask_generator)
 
-    # pylint: disable=no-self-use
-    def _create_2d_block(self, input_tensor, num_filters, kernel_size, batch_norm=True):
-
-        model = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(input_tensor)
-
-        if batch_norm:
-            model = keras.layers.BatchNormalization()(model)
-
-        model = keras.layers.Activation('relu')(model)
-
-        model = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(model)
-
-        if batch_norm:
-            model = keras.layers.BatchNormalization()(model)
-
-        model = keras.layers.Activation('relu')(model)
-
-        return model
-
     def _build_model(self):
         """
         Constructs the neural network, and compiles it.
@@ -337,45 +306,45 @@ class RGBUNet:
         inputs = keras.Input(self.input_size)
 
         # Left side of UNet
-        conv1 = self._create_2d_block(inputs, num_filters * 1, kernel_size=kernel_size, batch_norm=batch_norm)
+        conv1 = _create_2d_block(inputs, num_filters * 1, kernel_size=kernel_size, batch_norm=batch_norm)
         pool1 = keras.layers.MaxPooling2D((pooling_size, pooling_size))(conv1)
         pool1 = keras.layers.Dropout(dropout)(pool1)
 
-        conv2 = self._create_2d_block(pool1, num_filters * 2, kernel_size=kernel_size, batch_norm=batch_norm)
+        conv2 = _create_2d_block(pool1, num_filters * 2, kernel_size=kernel_size, batch_norm=batch_norm)
         pool2 = keras.layers.MaxPooling2D((pooling_size, pooling_size))(conv2)
         pool2 = keras.layers.Dropout(dropout)(pool2)
 
-        conv3 = self._create_2d_block(pool2, num_filters * 4, kernel_size=kernel_size, batch_norm=batch_norm)
+        conv3 = _create_2d_block(pool2, num_filters * 4, kernel_size=kernel_size, batch_norm=batch_norm)
         pool3 = keras.layers.MaxPooling2D((pooling_size, pooling_size))(conv3)
         pool3 = keras.layers.Dropout(dropout)(pool3)
 
-        conv4 = self._create_2d_block(pool3, num_filters * 8, kernel_size=kernel_size, batch_norm=batch_norm)
+        conv4 = _create_2d_block(pool3, num_filters * 8, kernel_size=kernel_size, batch_norm=batch_norm)
         pool4 = keras.layers.MaxPooling2D((pooling_size, pooling_size))(conv4)
         pool4 = keras.layers.Dropout(dropout)(pool4)
 
         # Bottom of UNet
-        conv5 = self._create_2d_block(pool4, num_filters * 16, kernel_size=kernel_size, batch_norm=batch_norm)
+        conv5 = _create_2d_block(pool4, num_filters * 16, kernel_size=kernel_size, batch_norm=batch_norm)
 
         # Right side of UNet
         up6 = keras.layers.Conv2DTranspose(num_filters * 8, 3, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv5)
         up6 = keras.layers.concatenate([up6, conv4])
         up6 = keras.layers.Dropout(dropout)(up6)
-        conv6 = self._create_2d_block(up6, num_filters * 8, kernel_size=3, batch_norm=batch_norm)
+        conv6 = _create_2d_block(up6, num_filters * 8, kernel_size=3, batch_norm=batch_norm)
 
         up7 = keras.layers.Conv2DTranspose(num_filters * 4, 3, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv6)
         up7 = keras.layers.concatenate([up7, conv3])
         up7 = keras.layers.Dropout(dropout)(up7)
-        conv7 = self._create_2d_block(up7, num_filters * 4, kernel_size=3, batch_norm=batch_norm)
+        conv7 = _create_2d_block(up7, num_filters * 4, kernel_size=3, batch_norm=batch_norm)
 
         up8 = keras.layers.Conv2DTranspose(num_filters * 2, 3, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv7)
         up8 = keras.layers.concatenate([up8, conv2])
         up8 = keras.layers.Dropout(dropout)(up8)
-        conv8 = self._create_2d_block(up8, num_filters * 2, kernel_size=3, batch_norm=batch_norm)
+        conv8 = _create_2d_block(up8, num_filters * 2, kernel_size=3, batch_norm=batch_norm)
 
         up9 = keras.layers.Conv2DTranspose(num_filters * 1, 3, strides=(2, 2), padding='same', kernel_initializer='he_normal')(conv8)
         up9 = keras.layers.concatenate([up9, conv1])
         up9 = keras.layers.Dropout(dropout)(up9)
-        conv9 = self._create_2d_block(up9, num_filters * 1, kernel_size=3, batch_norm=batch_norm)
+        conv9 = _create_2d_block(up9, num_filters * 1, kernel_size=3, batch_norm=batch_norm)
 
         conv10 = keras.layers.Conv2D(1, 1, padding='same', activation='sigmoid')(conv9)
 
@@ -625,3 +594,34 @@ def run_rgb_unet_model(logs,
                     os.path.join(prediction, os.path.basename(test_file)), mask)
             else:
                 cv2.imwrite(prediction, mask)
+
+
+def _copy_images(src_dir, dst_dir):
+    """
+    Symlinks .png files from one directory to another.
+    """
+    for image_file in glob.iglob(os.path.join(src_dir, "*.png")):
+        destination = os.path.join(dst_dir,
+                                   os.path.basename(
+                                       os.path.dirname(src_dir)) + "_" +
+                                   os.path.basename(image_file))
+        os.symlink(image_file, destination)
+
+
+def _create_2d_block(input_tensor, num_filters, kernel_size, batch_norm=True):
+
+    model = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(input_tensor)
+
+    if batch_norm:
+        model = keras.layers.BatchNormalization()(model)
+
+    model = keras.layers.Activation('relu')(model)
+
+    model = keras.layers.Conv2D(num_filters, kernel_size, padding='same', kernel_initializer='he_normal')(model)
+
+    if batch_norm:
+        model = keras.layers.BatchNormalization()(model)
+
+    model = keras.layers.Activation('relu')(model)
+
+    return model

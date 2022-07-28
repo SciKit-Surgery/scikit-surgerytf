@@ -1,9 +1,8 @@
 scikit-surgerytf
 ===============================
 
-.. image:: https://github.com/UCL/scikit-surgerytf/raw/master/weiss_logo.png
-   :height: 128px
-   :width: 128px
+.. image:: https://github.com/SciKit-Surgery/scikit-surgery/blob/web/assets/logo.svg
+   :width: 256px
    :target: https://github.com/UCL/scikit-surgerytf
    :alt: Logo
 

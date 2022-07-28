@@ -30,8 +30,8 @@ root_dir_rel = os.path.join('..')
 root_dir_abs = os.path.abspath(root_dir_rel)
 module_path = root_dir_abs
 sys.path.insert(0, module_path)
-logo_file = 'weiss_logo.png'
-logo_path = os.path.join('..', logo_file)
+logo_file = 'https://github.com/SciKit-Surgery/scikit-surgery/blob/web/assets/logo.svg'
+logo_path = logo_file
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -178,7 +178,7 @@ html_theme_options = {
     'stickysidebar': 'true',
 }
 
-html_logo = logo_path
+html_logo = 'https://github.com/SciKit-Surgery/scikit-surgery/blob/web/assets/logo.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
